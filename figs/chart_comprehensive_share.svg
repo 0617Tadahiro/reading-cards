@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="190" viewBox="0 0 680 190" role="img"><title>公立中等教育に占めるコンプリヘンシブ・スクールの割合</title><style>text{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif}</style>
+<text x="40" y="40" font-size="15" font-weight="600" fill="#233A5C">公立中等教育に占めるコンプリヘンシブ・スクールの割合</text>
+<text x="40" y="87" font-size="13" fill="#233A5C">1976年</text>
+<rect x="250" y="74" width="380" height="20" rx="3" fill="#EEEEE8"/>
+<rect x="250" y="74" width="288.8" height="20" rx="3" fill="#D85A30"/>
+<text x="544.8" y="88" font-size="12" fill="#5B6575">76%</text>
+<text x="40" y="127" font-size="13" fill="#233A5C">現在</text>
+<rect x="250" y="114" width="380" height="20" rx="3" fill="#EEEEE8"/>
+<rect x="250" y="114" width="342.0" height="20" rx="3" fill="#D85A30"/>
+<text x="598.0" y="128" font-size="12" fill="#5B6575">90%</text>
+</svg>

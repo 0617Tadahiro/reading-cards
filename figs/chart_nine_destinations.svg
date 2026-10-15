@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="230" viewBox="0 0 680 230" role="img"><title>ザ・ナイン卒業生の進学先（大学進学率は約9割）</title><style>text{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif}</style>
+<text x="40" y="40" font-size="15" font-weight="600" fill="#233A5C">ザ・ナイン卒業生の進学先（大学進学率は約9割）</text>
+<text x="40" y="87" font-size="13" fill="#233A5C">オックスブリッジ（3〜4割）</text>
+<rect x="250" y="74" width="380" height="20" rx="3" fill="#EEEEE8"/>
+<rect x="250" y="74" width="266.0" height="20" rx="3" fill="#D85A30"/>
+<text x="522.0" y="88" font-size="12" fill="#5B6575">35%</text>
+<text x="40" y="127" font-size="13" fill="#233A5C">米アイビーリーグ</text>
+<rect x="250" y="114" width="380" height="20" rx="3" fill="#EEEEE8"/>
+<rect x="250" y="114" width="76.0" height="20" rx="3" fill="#D85A30"/>
+<text x="332.0" y="128" font-size="12" fill="#5B6575">10%</text>
+<text x="40" y="167" font-size="13" fill="#233A5C">その他の英名門大</text>
+<rect x="250" y="154" width="380" height="20" rx="3" fill="#EEEEE8"/>
+<rect x="250" y="154" width="304.0" height="20" rx="3" fill="#D85A30"/>
+<text x="560.0" y="168" font-size="12" fill="#5B6575">40%</text>
+</svg>

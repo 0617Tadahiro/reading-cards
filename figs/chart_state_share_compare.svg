@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="230" viewBox="0 0 680 230" role="img"><title>公立校出身者の割合の比較</title><style>text{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif}</style>
+<text x="40" y="40" font-size="15" font-weight="600" fill="#233A5C">公立校出身者の割合の比較</text>
+<text x="40" y="87" font-size="13" fill="#233A5C">英国の生徒全体</text>
+<rect x="250" y="74" width="380" height="20" rx="3" fill="#EEEEE8"/>
+<rect x="250" y="74" width="353.4" height="20" rx="3" fill="#D85A30"/>
+<text x="609.4" y="88" font-size="12" fill="#5B6575">93%</text>
+<text x="40" y="127" font-size="13" fill="#233A5C">AレベルAAA以上取得者</text>
+<rect x="250" y="114" width="380" height="20" rx="3" fill="#EEEEE8"/>
+<rect x="250" y="114" width="304.0" height="20" rx="3" fill="#D85A30"/>
+<text x="560.0" y="128" font-size="12" fill="#5B6575">80%</text>
+<text x="40" y="167" font-size="13" fill="#233A5C">オックスフォード入学者（2025）</text>
+<rect x="250" y="154" width="380" height="20" rx="3" fill="#EEEEE8"/>
+<rect x="250" y="154" width="252.7" height="20" rx="3" fill="#D85A30"/>
+<text x="508.7" y="168" font-size="12" fill="#5B6575">66.5%</text>
+</svg>

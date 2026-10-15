@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="190" viewBox="0 0 680 190" role="img"><title>教員の基本給レンジ（2024年度・年額ポンド）</title><style>text{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif}</style>
+<text x="40" y="40" font-size="15" font-weight="600" fill="#233A5C">教員の基本給レンジ（2024年度・年額ポンド）</text>
+<text x="40" y="87" font-size="13" fill="#233A5C">公立</text>
+<rect x="421.8" y="74" width="153.9" height="20" rx="3" fill="#D85A30" opacity=".85"/>
+<text x="415.8" y="88" font-size="12" fill="#5B6575" text-anchor="end">£31,650</text><text x="581.7" y="88" font-size="12" fill="#5B6575">£60,000</text>
+<text x="40" y="127" font-size="13" fill="#233A5C">私立（パブリックスクール）</text>
+<rect x="440.0" y="114" width="152.0" height="20" rx="3" fill="#1D9E75" opacity=".85"/>
+<text x="434.0" y="128" font-size="12" fill="#5B6575" text-anchor="end">£35,000</text><text x="598.0" y="128" font-size="12" fill="#5B6575">£63,000</text>
+</svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="230" viewBox="0 0 680 230" role="img"><title>11歳試験後の進学先（三分岐制度・目安）</title><style>text{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif}</style>
+<text x="40" y="40" font-size="15" font-weight="600" fill="#233A5C">11歳試験後の進学先（三分岐制度・目安）</text>
+<text x="40" y="87" font-size="13" fill="#233A5C">グラマー（15〜20%）</text>
+<rect x="250" y="74" width="380" height="20" rx="3" fill="#EEEEE8"/>
+<rect x="250" y="74" width="68.4" height="20" rx="3" fill="#D85A30"/>
+<text x="324.4" y="88" font-size="12" fill="#5B6575">18%</text>
+<text x="40" y="127" font-size="13" fill="#233A5C">テクニカル（10%未満）</text>
+<rect x="250" y="114" width="380" height="20" rx="3" fill="#EEEEE8"/>
+<rect x="250" y="114" width="30.4" height="20" rx="3" fill="#D85A30"/>
+<text x="286.4" y="128" font-size="12" fill="#5B6575">8%</text>
+<text x="40" y="167" font-size="13" fill="#233A5C">モダン（70%以上）</text>
+<rect x="250" y="154" width="380" height="20" rx="3" fill="#EEEEE8"/>
+<rect x="250" y="154" width="281.2" height="20" rx="3" fill="#D85A30"/>
+<text x="537.2" y="168" font-size="12" fill="#5B6575">74%</text>
+</svg>

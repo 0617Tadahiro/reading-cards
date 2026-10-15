@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="270" viewBox="0 0 680 270" role="img"><title>要職に占めるパブリックスクール出身者の割合</title><style>text{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif}</style>
+<text x="40" y="40" font-size="15" font-weight="600" fill="#233A5C">要職に占めるパブリックスクール出身者の割合</text>
+<text x="40" y="87" font-size="13" fill="#233A5C">上級裁判官</text>
+<rect x="250" y="74" width="380" height="20" rx="3" fill="#EEEEE8"/>
+<rect x="250" y="74" width="281.2" height="20" rx="3" fill="#D85A30"/>
+<text x="537.2" y="88" font-size="12" fill="#5B6575">74%</text>
+<text x="40" y="127" font-size="13" fill="#233A5C">軍の士官・将校</text>
+<rect x="250" y="114" width="380" height="20" rx="3" fill="#EEEEE8"/>
+<rect x="250" y="114" width="269.8" height="20" rx="3" fill="#D85A30"/>
+<text x="525.8" y="128" font-size="12" fill="#5B6575">71%</text>
+<text x="40" y="167" font-size="13" fill="#233A5C">貴族院議員</text>
+<rect x="250" y="154" width="380" height="20" rx="3" fill="#EEEEE8"/>
+<rect x="250" y="154" width="190.0" height="20" rx="3" fill="#D85A30"/>
+<text x="446.0" y="168" font-size="12" fill="#5B6575">50%</text>
+<text x="40" y="207" font-size="13" fill="#233A5C">歴代首相（32/58人）</text>
+<rect x="250" y="194" width="380" height="20" rx="3" fill="#EEEEE8"/>
+<rect x="250" y="194" width="209.0" height="20" rx="3" fill="#D85A30"/>
+<text x="465.0" y="208" font-size="12" fill="#5B6575">55%</text>
+</svg>
