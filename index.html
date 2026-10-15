@@ -236,11 +236,6 @@ function ReadingCards() {
   const [tag, setTag] = useState(null);
   const [openCh, setOpenCh] = useState(new Set());
   const [openSec, setOpenSec] = useState(new Set());
-  // 追加フォーム
-  const [fTitle, setFTitle] = useState("");
-  const [fAuthor, setFAuthor] = useState("");
-  const [fTags, setFTags] = useState("");
-  const [fBody, setFBody] = useState("");
   // AI質問(文単位)
   const [sel, setSel] = useState(null);       // { line: 選択した生テキスト行, ctx: 章のメモ全文 }
   const [askText, setAskText] = useState("");
@@ -344,21 +339,6 @@ function ReadingCards() {
     const next = new Set(set);
     next.has(key) ? next.delete(key) : next.add(key);
     setter(next);
-  };
-
-  const addNote = async () => {
-    if (!fTitle.trim() || !fBody.trim()) return;
-    const n = {
-      id: uid(),
-      title: fTitle.trim(),
-      author: fAuthor.trim(),
-      tags: fTags.split(/[,、]/).map((t) => t.trim()).filter(Boolean),
-      body: fBody,
-      createdAt: Date.now(),
-    };
-    await save([n, ...notes]);
-    setFTitle(""); setFAuthor(""); setFTags(""); setFBody("");
-    setView("list");
   };
 
   const removeNote = async (id) => {
@@ -736,45 +716,6 @@ function ReadingCards() {
     );
   }
 
-  // ================= 追加 =================
-  if (view === "add") {
-    return (
-      <div style={page}>
-        <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px" }}>
-          <button onClick={() => setView("list")}
-            style={{ border: "none", background: "none", color: C.ink, fontSize: 15, cursor: "pointer", padding: 0 }}>
-            ← 戻る
-          </button>
-          <span style={{ fontFamily: SERIF, fontSize: 16 }}>カードを追加</span>
-          <span style={{ width: 40 }} />
-        </header>
-        <div style={{ padding: "4px 18px 60px", display: "flex", flexDirection: "column", gap: 12 }}>
-          <input style={input} placeholder="書名（必須）" value={fTitle} onChange={(e) => setFTitle(e.target.value)} />
-          <input style={input} placeholder="著者" value={fAuthor} onChange={(e) => setFAuthor(e.target.value)} />
-          <input style={input} placeholder="タグ（カンマ区切り：経営, 歴史 …）" value={fTags} onChange={(e) => setFTags(e.target.value)} />
-          <textarea
-            style={{ ...input, minHeight: "44vh", lineHeight: 1.8, resize: "vertical" }}
-            placeholder={"要約テキストを貼り付け（必須）\n\n書式の目安：\n## 章タイトル\n### 章の中の項目（大きい本のとき）\n- 箇条書き\n**太字**　==蛍光マーカー=="}
-            value={fBody}
-            onChange={(e) => setFBody(e.target.value)}
-          />
-          <button
-            onClick={addNote}
-            disabled={!fTitle.trim() || !fBody.trim()}
-            style={{
-              padding: "14px", borderRadius: 10, border: "none",
-              background: fTitle.trim() && fBody.trim() ? C.ink : C.rule,
-              color: C.white, fontSize: 15, fontFamily: SERIF, letterSpacing: 1,
-              cursor: fTitle.trim() && fBody.trim() ? "pointer" : "default",
-            }}
-          >
-            保存する
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   // ================= 一覧 =================
   return (
     <div style={page}>
@@ -890,26 +831,6 @@ function ReadingCards() {
         </div>
       )}
 
-      <button
-        onClick={() => setView("add")}
-        style={{
-          position: "fixed",
-          bottom: 24,
-          right: "max(18px, calc(50% - 322px))",
-          padding: "14px 22px",
-          borderRadius: 999,
-          border: "none",
-          background: C.ink,
-          color: C.white,
-          fontSize: 15,
-          fontFamily: SERIF,
-          letterSpacing: 1,
-          boxShadow: "0 4px 12px rgba(35,58,92,0.3)",
-          cursor: "pointer",
-        }}
-      >
-        ＋ 追加
-      </button>
     </div>
   );
 }
