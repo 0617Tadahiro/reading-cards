@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>読書カード</title>
+<link rel="icon" href="data:," />
+<meta name="description" content="人文・社会科学の書籍を精読した読書カード" />
+<style>
+  * { -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: #FAFAF7; }
+  #root { min-height: 100vh; }
+  .app-loading {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    font-family: "Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif;
+    color: #8A93A3; font-size: 15px;
+  }
+</style>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+</head>
+<body>
+<div id="root"><div class="app-loading">読み込み中…</div></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useCallback, useMemo } = React;
+
+// ---- 蔵書カード design tokens ----
+const C = {
+  paper: "#FAFAF7",
+  ink: "#233A5C",
+  rule: "#C9D4E0",
+  red: "#C8443E",
+  faint: "#8A93A3",
+  white: "#FFFFFF",
+  mark: "#FFF3B8",
+};
+const SERIF = `"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif`;
+const SANS = `"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif`;
+const KEY = "reading-cards-v1";
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+// ---- シード:職業としての学問 ----
+// カードデータは cards/ 配下のJSONから読み込む（下部の loadCards 参照）
+
+// ---- インライン整形 ----
+function renderInline(text, key) {
+  const parts = [];
+  let rest = text;
+  let i = 0;
+  const re = /(\*\*([^*]+)\*\*|==([^=]+)==)/;
+  while (rest) {
+    const m = rest.match(re);
+    if (!m) { parts.push(rest); break; }
+    if (m.index > 0) parts.push(rest.slice(0, m.index));
+    if (m[2] !== undefined) parts.push(<strong key={`${key}-b${i}`}>{m[2]}</strong>);
+    else parts.push(<mark key={`${key}-m${i}`} style={{ background: C.mark, padding: "0 2px" }}>{m[3]}</mark>);
+    rest = rest.slice(m.index + m[0].length);
+    i++;
+  }
+  return parts;
+}
+
+// ---- 行配列の整形(段落・リスト)。onPickで文タップ選択に対応 ----
+function Lines({ lines, k, onPick, selected }) {
+  const out = [];
+  let list = null;
+  const pickStyle = (raw) => ({
+    cursor: onPick ? "pointer" : "default",
+    background: selected === raw ? "#FCE9E8" : "transparent",
+    borderRadius: 4,
+    transition: "background .15s",
+  });
+  const flush = (i) => {
+    if (!list) return;
+    const Tag = list.type;
+    out.push(
+      <Tag key={`${k}-l${i}`} style={{ margin: "4px 0 12px", paddingLeft: 22 }}>
+        {list.items.map((it, j) => (
+          <li
+            key={j}
+            onClick={() => onPick && onPick(it.raw)}
+            style={{ marginBottom: 6, lineHeight: 1.9, ...pickStyle(it.raw) }}
+          >
+            {renderInline(it.text, `${k}-${i}-${j}`)}
+          </li>
+        ))}
+      </Tag>
+    );
+    list = null;
+  };
+  lines.forEach((raw, i) => {
+    const line = raw.trimEnd();
+    const ul = line.match(/^[-・]\s+(.*)/);
+    const ol = line.match(/^\d+[.)]\s+(.*)/);
+    if (ul) {
+      if (!list || list.type !== "ul") { flush(i); list = { type: "ul", items: [] }; }
+      list.items.push({ raw, text: ul[1] });
+      return;
+    }
+    if (ol) {
+      if (!list || list.type !== "ol") { flush(i); list = { type: "ol", items: [] }; }
+      list.items.push({ raw, text: ol[1] });
+      return;
+    }
+    flush(i);
+    if (!line) return;
+    out.push(
+      <p
+        key={`${k}-p${i}`}
+        onClick={() => onPick && onPick(raw)}
+        style={{ margin: "0 0 12px", lineHeight: 1.95, ...pickStyle(raw) }}
+      >
+        {renderInline(line, `${k}-p${i}`)}
+      </p>
+    );
+  });
+  flush("end");
+  return <div>{out}</div>;
+}
+
+// ---- 本文 → 章・項目の構造に分解 ----
+// ## 章タイトル / ### 項目タイトル / それ以外は本文行
+function parseBook(body) {
+  const preamble = [];
+  const chapters = [];
+  let ch = null;
+  let sec = null;
+  body.split("\n").forEach((raw) => {
+    const h2 = raw.match(/^##(?!#)\s+(.*)/);
+    const h3 = raw.match(/^###\s+(.*)/);
+    if (h2) {
+      ch = { title: h2[1].trim(), intro: [], sections: [] };
+      sec = null;
+      chapters.push(ch);
+      return;
+    }
+    if (h3 && ch) {
+      sec = { title: h3[1].trim(), lines: [] };
+      ch.sections.push(sec);
+      return;
+    }
+    if (sec) sec.lines.push(raw);
+    else if (ch) ch.intro.push(raw);
+    else preamble.push(raw);
+  });
+  return { preamble, chapters };
+}
+
+const hasText = (lines) => lines.some((l) => l.trim());
+
+// ---- 章構造 → テキストに戻す ----
+const serializeChapter = (c) => {
+  const lines = [`## ${c.title}`, ...c.intro];
+  c.sections.forEach((s) => {
+    lines.push(`### ${s.title}`, ...s.lines);
+  });
+  return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+};
+
+// ---- 開閉マーカー ----
+function Caret({ open }) {
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        transition: "transform .15s",
+        transform: open ? "rotate(90deg)" : "rotate(0deg)",
+        color: C.red,
+        fontSize: 12,
+        width: 16,
+        flexShrink: 0,
+      }}
+    >
+      ▶
+    </span>
+  );
+}
+
+function ReadingCards() {
+  const [notes, setNotes] = useState([]);
+  const [trash, setTrash] = useState([]); // 削除したカードの退避スタック（新しい順）
+  const [confirmId, setConfirmId] = useState(null); // 削除確認中のカードID
+  const [loaded, setLoaded] = useState(false);
+  const [view, setView] = useState("list"); // list | read | add
+  const [activeId, setActiveId] = useState(null);
+  const [query, setQuery] = useState("");
+  const [tag, setTag] = useState(null);
+  const [openCh, setOpenCh] = useState(new Set());
+  const [openSec, setOpenSec] = useState(new Set());
+  // 追加フォーム
+  const [fTitle, setFTitle] = useState("");
+  const [fAuthor, setFAuthor] = useState("");
+  const [fTags, setFTags] = useState("");
+  const [fBody, setFBody] = useState("");
+  // AI質問(文単位)
+  const [sel, setSel] = useState(null);       // { line: 選択した生テキスト行, ctx: 章のメモ全文 }
+  const [askText, setAskText] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [asking, setAsking] = useState(false);
+  const [askErr, setAskErr] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      // 1) GitHub上の共有カード（cards/*.json）を読む
+      let shared = [];
+      try {
+        const idxRes = await fetch("cards.json", { cache: "no-store" });
+        const idx = await idxRes.json();
+        const files = (idx && Array.isArray(idx.files)) ? idx.files : [];
+        const loaded = await Promise.all(
+          files.map((fn) =>
+            fetch(fn, { cache: "no-store" })
+              .then((r) => r.json())
+              .catch(() => null)
+          )
+        );
+        shared = loaded.filter(Boolean).map((c) => ({ ...c, createdAt: c.createdAt || 0 }));
+      } catch (e) { /* ローカルfile://で開いた等。共有カードなしで続行 */ }
+
+      // 2) このブラウザでユーザーが追加/編集したカード（localStorage）を読む
+      let localNotes = [];
+      try {
+        const raw = localStorage.getItem(KEY);
+        if (raw) {
+          const d = JSON.parse(raw);
+          if (d && Array.isArray(d.notes)) localNotes = d.notes;
+        }
+      } catch (e) { /* 初回 */ }
+
+      // 3) マージ：同じidはlocal（ユーザー編集）を優先。localだけのカードは追加分として残す
+      const sharedIds = new Set(shared.map((n) => n.id));
+      const merged = [
+        ...localNotes.filter((n) => !sharedIds.has(n.id)), // ユーザー独自の追加カード（新しい順で先頭へ）
+        ...shared.map((s) => {
+          const override = localNotes.find((n) => n.id === s.id);
+          return override || s; // 共有カードをローカルで編集していたらそちらを使う
+        }),
+      ];
+
+      setNotes(merged.length ? merged : shared);
+      setLoaded(true);
+    })();
+  }, []);
+
+  const save = useCallback(async (next) => {
+    setNotes(next);
+    try {
+      // localStorageには全カードを保存（共有カードの編集・ユーザー追加の両方を保持）
+      localStorage.setItem(KEY, JSON.stringify({ notes: next }));
+    } catch (e) {
+      console.error("save failed", e);
+    }
+  }, []);
+
+  const active = notes.find((n) => n.id === activeId);
+  const book = useMemo(() => (active ? parseBook(active.body) : null), [active]);
+  const allTags = [...new Set(notes.flatMap((n) => n.tags))];
+
+  const filtered = notes
+    .filter((n) => !tag || n.tags.includes(tag))
+    .filter((n) => {
+      if (!query.trim()) return true;
+      const q = query.toLowerCase();
+      return (
+        n.title.toLowerCase().includes(q) ||
+        (n.author || "").toLowerCase().includes(q) ||
+        n.tags.join(",").toLowerCase().includes(q) ||
+        n.body.toLowerCase().includes(q)
+      );
+    })
+    .sort((a, b) => b.createdAt - a.createdAt);
+
+  const openBook = (id) => {
+    setActiveId(id);
+    setOpenCh(new Set());   // 全部閉じた状態で開く
+    setOpenSec(new Set());
+    setView("read");
+  };
+
+  const toggle = (set, setter, key) => {
+    const next = new Set(set);
+    next.has(key) ? next.delete(key) : next.add(key);
+    setter(next);
+  };
+
+  const addNote = async () => {
+    if (!fTitle.trim() || !fBody.trim()) return;
+    const n = {
+      id: uid(),
+      title: fTitle.trim(),
+      author: fAuthor.trim(),
+      tags: fTags.split(/[,、]/).map((t) => t.trim()).filter(Boolean),
+      body: fBody,
+      createdAt: Date.now(),
+    };
+    await save([n, ...notes]);
+    setFTitle(""); setFAuthor(""); setFTags(""); setFBody("");
+    setView("list");
+  };
+
+  const removeNote = async (id) => {
+    const deleted = notes.find((n) => n.id === id);
+    await save(notes.filter((n) => n.id !== id));
+    if (deleted) setTrash((t) => [deleted, ...t]); // 退避してあとで戻せるようにする
+    setConfirmId(null);
+    setView("list");
+    setActiveId(null);
+  };
+
+  // ---- 直前に削除したカードを1枚戻す ----
+  const undoDelete = async () => {
+    if (trash.length === 0) return;
+    const [restore, ...rest] = trash;
+    if (!notes.some((n) => n.id === restore.id)) {
+      await save([restore, ...notes]);
+    }
+    setTrash(rest);
+  };
+
+  // ---- 元に戻すバーを閉じる（退避はすべて破棄） ----
+  const dismissUndo = () => setTrash([]);
+
+  // ---- 選択した文についてAIに質問 → 書き換え案を生成 ----
+  const askAI = async () => {
+    if (!sel || asking) return;
+    setAsking(true); setAskErr(""); setAnswer("");
+    // AI書き換え機能は公開版（GitHub Pages）では利用できません。
+    setAskErr("この公開版ではAI書き換え機能は使えません（閲覧・追加・削除・検索・元に戻すは使えます）。");
+    setAsking(false);
+  };
+
+  // ---- 書き換え案で選択した文だけを置き換える ----
+  const applyRewrite = async () => {
+    if (!sel || !answer) return;
+    const txt = answer.trim().replace(/```[a-z]*\n?|```/g, "").trim();
+    const body = active.body;
+    const idx = body.indexOf(sel.line);
+    if (idx === -1) {
+      setAskErr("対象の文が見つかりませんでした。");
+      return;
+    }
+    const newBody = body.slice(0, idx) + txt + body.slice(idx + sel.line.length);
+    const next = notes.map((n) => (n.id === active.id ? { ...n, body: newBody } : n));
+    await save(next);
+    setSel(null); setAskText(""); setAnswer("");
+  };
+
+  const pickLine = (raw, ctx) => {
+    setSel({ line: raw, ctx });
+    setAskText(""); setAnswer(""); setAskErr("");
+  };
+
+  const page = {
+    minHeight: "100vh",
+    background: C.paper,
+    fontFamily: SANS,
+    color: C.ink,
+    maxWidth: 680,
+    margin: "0 auto",
+  };
+  const input = {
+    width: "100%",
+    boxSizing: "border-box",
+    padding: "11px 14px",
+    border: `1px solid ${C.rule}`,
+    borderRadius: 8,
+    background: C.white,
+    fontSize: 15,
+    color: C.ink,
+    outline: "none",
+    fontFamily: SANS,
+  };
+  const chip = (on) => ({
+    padding: "5px 13px",
+    borderRadius: 999,
+    border: `1px solid ${on ? C.red : C.rule}`,
+    background: on ? C.red : C.white,
+    color: on ? C.white : C.ink,
+    fontSize: 13,
+    whiteSpace: "nowrap",
+    cursor: "pointer",
+  });
+
+  if (!loaded)
+    return (
+      <div style={{ ...page, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <span style={{ color: C.faint }}>読み込み中…</span>
+      </div>
+    );
+
+  // ================= 閲覧(目次アコーディオン) =================
+  if (view === "read" && active && book) {
+    const allOpen = openCh.size >= book.chapters.length && book.chapters.length > 0;
+    const expandAll = () => {
+      if (allOpen) { setOpenCh(new Set()); setOpenSec(new Set()); }
+      else {
+        setOpenCh(new Set(book.chapters.map((_, i) => i)));
+        const s = new Set();
+        book.chapters.forEach((c, ci) => c.sections.forEach((_, si) => s.add(`${ci}-${si}`)));
+        setOpenSec(s);
+      }
+    };
+    return (
+      <div style={page}>
+        <header
+          style={{
+            position: "sticky", top: 0, zIndex: 10, background: C.paper,
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            padding: "14px 18px 10px", borderBottom: `1px solid ${C.rule}`,
+          }}
+        >
+          <button onClick={() => setView("list")}
+            style={{ border: "none", background: "none", color: C.ink, fontSize: 15, cursor: "pointer", padding: 0 }}>
+            ← 一覧
+          </button>
+          <div style={{ display: "flex", gap: 16 }}>
+            <button onClick={expandAll}
+              style={{ border: "none", background: "none", color: C.ink, fontSize: 13, cursor: "pointer", padding: 0 }}>
+              {allOpen ? "すべて閉じる" : "すべて開く"}
+            </button>
+            <button onClick={() => setConfirmId(active.id)}
+              style={{ border: "none", background: "none", color: C.faint, fontSize: 13, cursor: "pointer", padding: 0 }}>
+              削除
+            </button>
+          </div>
+        </header>
+
+        <article style={{ padding: "22px 18px 80px" }}>
+          <div style={{ height: 3, background: C.red, width: 56, marginBottom: 14 }} />
+          <h1 style={{ fontFamily: SERIF, fontSize: 24, margin: "0 0 6px", lineHeight: 1.5 }}>
+            {active.title}
+          </h1>
+          {active.author && (
+            <div style={{ fontSize: 13, color: C.faint, marginBottom: 8 }}>{active.author}</div>
+          )}
+          {active.tags.length > 0 && (
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
+              {active.tags.map((t) => (
+                <span key={t} style={{ fontSize: 11, color: C.red, border: `1px solid ${C.red}`, borderRadius: 999, padding: "1px 9px" }}>
+                  #{t}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {hasText(book.preamble) && (
+            <div style={{ fontSize: 14.5, color: C.ink, marginBottom: 18, paddingBottom: 14, borderBottom: `1px dashed ${C.rule}` }}>
+              <Lines
+                lines={book.preamble}
+                k="pre"
+                selected={sel ? sel.line : null}
+                onPick={(raw) => pickLine(raw, book.preamble.join("\n"))}
+              />
+            </div>
+          )}
+
+          <div style={{ fontSize: 12, color: C.faint, marginBottom: 12 }}>
+            タップで文を選択できます
+          </div>
+
+          {/* 目次 = 章のアコーディオン */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {book.chapters.map((c, ci) => {
+              const cOpen = openCh.has(ci);
+              return (
+                <section
+                  key={ci}
+                  style={{
+                    background: C.white,
+                    border: `1px solid ${cOpen ? C.ink : C.rule}`,
+                    borderRadius: 10,
+                    overflow: "hidden",
+                  }}
+                >
+                  <button
+                    onClick={() => toggle(openCh, setOpenCh, ci)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 8,
+                      width: "100%", textAlign: "left",
+                      padding: "14px 14px",
+                      border: "none", background: "none", cursor: "pointer",
+                      fontFamily: SERIF, fontSize: 16.5, color: C.ink, lineHeight: 1.5,
+                    }}
+                  >
+                    <Caret open={cOpen} />
+                    <span style={{ flex: 1 }}>{c.title}</span>
+                    {c.sections.length > 0 && (
+                      <span style={{ fontSize: 11, color: C.faint, fontFamily: SANS }}>
+                        {c.sections.length}項目
+                      </span>
+                    )}
+                  </button>
+
+                  {cOpen && (
+                    <div style={{ padding: "0 16px 14px 38px", fontSize: 15 }}>
+                      {hasText(c.intro) && (
+                        <Lines
+                          lines={c.intro}
+                          k={`c${ci}`}
+                          selected={sel ? sel.line : null}
+                          onPick={(raw) => pickLine(raw, serializeChapter(c))}
+                        />
+                      )}
+
+                      {/* 項目(###)のアコーディオン */}
+                      {c.sections.map((s, si) => {
+                        const key = `${ci}-${si}`;
+                        const sOpen = openSec.has(key);
+                        return (
+                          <div key={key} style={{ borderTop: `1px solid ${C.rule}` }}>
+                            <button
+                              onClick={() => toggle(openSec, setOpenSec, key)}
+                              style={{
+                                display: "flex", alignItems: "center", gap: 8,
+                                width: "100%", textAlign: "left",
+                                padding: "11px 0",
+                                border: "none", background: "none", cursor: "pointer",
+                                fontSize: 14.5, fontWeight: 600, color: C.ink, lineHeight: 1.5,
+                              }}
+                            >
+                              <Caret open={sOpen} />
+                              <span>{s.title}</span>
+                            </button>
+                            {sOpen && (
+                              <div style={{ padding: "0 0 10px 24px", fontSize: 14.5 }}>
+                                <Lines
+                                  lines={s.lines}
+                                  k={key}
+                                  selected={sel ? sel.line : null}
+                                  onPick={(raw) => pickLine(raw, serializeChapter(c))}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </section>
+              );
+            })}
+          </div>
+        </article>
+
+        {/* 削除確認ダイアログ */}
+        {confirmId && (
+          <div
+            onClick={() => setConfirmId(null)}
+            style={{
+              position: "fixed", inset: 0, zIndex: 40,
+              background: "rgba(35,58,92,0.28)",
+              display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: C.white, borderRadius: 14, padding: "22px 20px 18px",
+                width: "min(340px, 100%)", boxShadow: "0 10px 30px rgba(35,58,92,0.3)",
+                borderTop: `4px solid ${C.red}`,
+              }}
+            >
+              <div style={{ fontFamily: SERIF, fontSize: 17, marginBottom: 8 }}>カードを削除しますか？</div>
+              <div style={{ fontSize: 13, color: C.faint, lineHeight: 1.7, marginBottom: 18 }}>
+                「{active.title}」を削除します。削除後も画面下の「元に戻す」から復元できます。
+              </div>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button
+                  onClick={() => setConfirmId(null)}
+                  style={{ flex: 1, padding: "11px 14px", borderRadius: 8, border: `1px solid ${C.rule}`, background: C.white, color: C.ink, fontSize: 14, cursor: "pointer" }}
+                >
+                  キャンセル
+                </button>
+                <button
+                  onClick={() => removeNote(active.id)}
+                  style={{ flex: 1, padding: "11px 14px", borderRadius: 8, border: "none", background: C.red, color: C.white, fontSize: 14, cursor: "pointer" }}
+                >
+                  削除する
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 文の質問・書き換えシート */}
+        {sel && (
+          <div
+            style={{
+              position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
+              width: "min(680px, 100%)", boxSizing: "border-box",
+              maxHeight: "62vh", overflowY: "auto",
+              background: C.white, borderTop: `3px solid ${C.red}`,
+              boxShadow: "0 -6px 20px rgba(35,58,92,0.18)",
+              borderRadius: "14px 14px 0 0",
+              padding: "14px 18px 20px", zIndex: 20,
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <span style={{ fontSize: 12, color: C.red, fontWeight: 600, letterSpacing: 1 }}>選択中の文</span>
+              <button
+                onClick={() => { setSel(null); setAskText(""); setAnswer(""); setAskErr(""); }}
+                style={{ border: "none", background: "none", color: C.faint, fontSize: 13, cursor: "pointer", padding: 0 }}
+              >
+                ✕ 閉じる
+              </button>
+            </div>
+            <div
+              style={{
+                fontSize: 13, lineHeight: 1.8, color: C.ink, background: C.paper,
+                border: `1px solid ${C.rule}`, borderRadius: 8, padding: "8px 12px", marginBottom: 10,
+                display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden",
+              }}
+            >
+              {sel.line.replace(/^[\s\-・]+/, "").replace(/\*\*|==/g, "")}
+            </div>
+
+            {!answer && (
+              <>
+                <textarea
+                  value={askText}
+                  onChange={(e) => setAskText(e.target.value)}
+                  placeholder="疑問を入力（空欄のまま送ると「より分かりやすく」書き直します）"
+                  style={{
+                    width: "100%", boxSizing: "border-box", minHeight: 64,
+                    padding: "10px 12px", border: `1px solid ${C.rule}`, borderRadius: 8,
+                    fontSize: 14, fontFamily: SANS, color: C.ink, outline: "none",
+                    lineHeight: 1.7, resize: "vertical",
+                  }}
+                />
+                <button
+                  onClick={askAI}
+                  disabled={asking}
+                  style={{
+                    marginTop: 8, padding: "11px 20px", borderRadius: 8, border: "none",
+                    background: asking ? C.rule : C.ink, color: C.white,
+                    fontSize: 14, cursor: asking ? "default" : "pointer", width: "100%",
+                  }}
+                >
+                  {asking ? "書き換え案を考え中…" : "AIに質問して書き換え案をもらう"}
+                </button>
+              </>
+            )}
+
+            {askErr && <div style={{ fontSize: 12.5, color: C.red, marginTop: 8 }}>{askErr}</div>}
+
+            {answer && (
+              <div style={{ background: C.paper, border: `1px solid ${C.rule}`, borderRadius: 8, padding: "12px 14px" }}>
+                <div style={{ fontSize: 11, color: C.red, fontWeight: 600, letterSpacing: 1, marginBottom: 6 }}>
+                  書き換え案
+                </div>
+                <div style={{ fontSize: 14, lineHeight: 1.9 }}>
+                  <Lines lines={answer.split("\n")} k="prev" />
+                </div>
+                <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+                  <button
+                    onClick={applyRewrite}
+                    style={{ flex: 1, padding: "11px 16px", borderRadius: 8, border: "none", background: C.red, color: C.white, fontSize: 14, cursor: "pointer" }}
+                  >
+                    この文を書き換える
+                  </button>
+                  <button
+                    onClick={() => setAnswer("")}
+                    style={{ padding: "11px 14px", borderRadius: 8, border: `1px solid ${C.rule}`, background: C.white, color: C.faint, fontSize: 13, cursor: "pointer" }}
+                  >
+                    破棄
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ================= 追加 =================
+  if (view === "add") {
+    return (
+      <div style={page}>
+        <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px" }}>
+          <button onClick={() => setView("list")}
+            style={{ border: "none", background: "none", color: C.ink, fontSize: 15, cursor: "pointer", padding: 0 }}>
+            ← 戻る
+          </button>
+          <span style={{ fontFamily: SERIF, fontSize: 16 }}>カードを追加</span>
+          <span style={{ width: 40 }} />
+        </header>
+        <div style={{ padding: "4px 18px 60px", display: "flex", flexDirection: "column", gap: 12 }}>
+          <input style={input} placeholder="書名（必須）" value={fTitle} onChange={(e) => setFTitle(e.target.value)} />
+          <input style={input} placeholder="著者" value={fAuthor} onChange={(e) => setFAuthor(e.target.value)} />
+          <input style={input} placeholder="タグ（カンマ区切り：経営, 歴史 …）" value={fTags} onChange={(e) => setFTags(e.target.value)} />
+          <textarea
+            style={{ ...input, minHeight: "44vh", lineHeight: 1.8, resize: "vertical" }}
+            placeholder={"要約テキストを貼り付け（必須）\n\n書式の目安：\n## 章タイトル\n### 章の中の項目（大きい本のとき）\n- 箇条書き\n**太字**　==蛍光マーカー=="}
+            value={fBody}
+            onChange={(e) => setFBody(e.target.value)}
+          />
+          <button
+            onClick={addNote}
+            disabled={!fTitle.trim() || !fBody.trim()}
+            style={{
+              padding: "14px", borderRadius: 10, border: "none",
+              background: fTitle.trim() && fBody.trim() ? C.ink : C.rule,
+              color: C.white, fontSize: 15, fontFamily: SERIF, letterSpacing: 1,
+              cursor: fTitle.trim() && fBody.trim() ? "pointer" : "default",
+            }}
+          >
+            保存する
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ================= 一覧 =================
+  return (
+    <div style={page}>
+      <header style={{ padding: "22px 18px 0" }}>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+          <h1 style={{ fontFamily: SERIF, fontSize: 26, fontWeight: 600, margin: 0, letterSpacing: 2 }}>
+            読書カード
+          </h1>
+          <span style={{ fontSize: 12, color: C.faint }}>{notes.length} 冊</span>
+        </div>
+        <div style={{ height: 2, background: C.red, marginTop: 10 }} />
+      </header>
+
+      <div style={{ padding: "14px 18px 6px" }}>
+        <input
+          style={input}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="書名・著者・本文を検索"
+        />
+      </div>
+
+      {allTags.length > 0 && (
+        <div style={{ display: "flex", gap: 7, overflowX: "auto", padding: "6px 18px 4px" }}>
+          {allTags.map((t) => (
+            <button key={t} style={chip(tag === t)} onClick={() => setTag(tag === t ? null : t)}>
+              #{t}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <main style={{ padding: "10px 18px 110px", display: "flex", flexDirection: "column", gap: 14 }}>
+        {filtered.length === 0 && (
+          <div style={{ textAlign: "center", color: C.faint, padding: "48px 0", fontSize: 14 }}>
+            該当するカードがありません
+          </div>
+        )}
+        {filtered.map((n) => {
+          const chCount = (n.body.match(/^##(?!#)\s/gm) || []).length;
+          return (
+            <article
+              key={n.id}
+              onClick={() => openBook(n.id)}
+              style={{
+                background: C.white,
+                border: `1px solid ${C.rule}`,
+                borderRadius: 10,
+                boxShadow: "0 1px 3px rgba(35,58,92,0.08)",
+                cursor: "pointer",
+                overflow: "hidden",
+              }}
+            >
+              <div style={{ height: 3, background: C.red }} />
+              <div style={{ padding: "13px 16px 14px" }}>
+                <h2 style={{ fontFamily: SERIF, fontSize: 18, margin: 0, lineHeight: 1.55 }}>
+                  {n.title}
+                </h2>
+                <div style={{ fontSize: 12, color: C.faint, margin: "3px 0 7px" }}>
+                  {n.author && <span>{n.author}　·　</span>}
+                  {chCount > 0 && <span>{chCount}章　·　</span>}
+                  {new Date(n.createdAt).toLocaleDateString("ja-JP")}
+                </div>
+                <p
+                  style={{
+                    margin: 0, fontSize: 13, lineHeight: 1.8, color: C.ink,
+                    display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+                  }}
+                >
+                  {n.body.replace(/[#*=\-]/g, "").trim().slice(0, 120)}
+                </p>
+                {n.tags.length > 0 && (
+                  <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+                    {n.tags.map((t) => (
+                      <span key={t} style={{ fontSize: 11, color: C.red, border: `1px solid ${C.red}`, borderRadius: 999, padding: "1px 8px" }}>
+                        #{t}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </article>
+          );
+        })}
+      </main>
+
+      {/* 削除の取り消しバー */}
+      {trash.length > 0 && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: 24,
+            left: "max(18px, calc(50% - 322px))",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            maxWidth: "min(430px, calc(100% - 150px))",
+            background: C.ink,
+            color: C.white,
+            borderRadius: 10,
+            padding: "12px 14px",
+            boxShadow: "0 4px 14px rgba(35,58,92,0.3)",
+            fontSize: 13,
+            zIndex: 30,
+          }}
+        >
+          <span
+            style={{
+              flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+            }}
+          >
+            「{trash[0].title}」を削除しました
+          </span>
+          <button
+            onClick={undoDelete}
+            style={{
+              border: "none", background: "none", color: C.mark,
+              fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", padding: 0,
+            }}
+          >
+            元に戻す
+          </button>
+          <button
+            onClick={dismissUndo}
+            style={{
+              border: "none", background: "none", color: C.faint,
+              fontSize: 14, cursor: "pointer", padding: "0 2px", lineHeight: 1,
+            }}
+            aria-label="閉じる"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      <button
+        onClick={() => setView("add")}
+        style={{
+          position: "fixed",
+          bottom: 24,
+          right: "max(18px, calc(50% - 322px))",
+          padding: "14px 22px",
+          borderRadius: 999,
+          border: "none",
+          background: C.ink,
+          color: C.white,
+          fontSize: 15,
+          fontFamily: SERIF,
+          letterSpacing: 1,
+          boxShadow: "0 4px 12px rgba(35,58,92,0.3)",
+          cursor: "pointer",
+        }}
+      >
+        ＋ 追加
+      </button>
+    </div>
+  );
+}
+
+const rootEl = document.getElementById("root");
+ReactDOM.createRoot(rootEl).render(<ReadingCards />);
+</script>
+</body>
+</html>

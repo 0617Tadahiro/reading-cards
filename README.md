@@ -1,1 +1,6 @@
-# reading-cards
+# 読書カード
+
+## カードを追加する手順
+1. Claudeに作ってもらった `○○.json` をアップロード
+2. `cards.json` を鉛筆アイコンで編集し、`"files"` の一覧にそのファイル名を1行足す
+3. Commit changes → 1〜2分でサイトに反映
