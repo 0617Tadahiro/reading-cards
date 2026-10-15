@@ -2,13 +2,14 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8" />
+<meta name="theme-color" content="#0E0F12" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>読書カード</title>
 <link rel="icon" href="data:," />
 <meta name="description" content="人文・社会科学の書籍を精読した読書カード" />
 <style>
   * { -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; padding: 0; background: #FAFAF7; }
+  html, body { margin: 0; padding: 0; background: #0E0F12; color-scheme: dark; }
   #root { min-height: 100vh; }
   .app-loading {
     min-height: 100vh; display: flex; align-items: center; justify-content: center;
@@ -28,13 +29,14 @@ const { useState, useEffect, useCallback, useMemo } = React;
 
 // ---- 蔵書カード design tokens ----
 const C = {
-  paper: "#FAFAF7",
-  ink: "#233A5C",
-  rule: "#C9D4E0",
-  red: "#C8443E",
-  faint: "#8A93A3",
-  white: "#FFFFFF",
-  mark: "#FFF3B8",
+  paper: "#0E0F12",   // 背景
+  ink: "#ECE9E3",     // 文字
+  rule: "#2A2E36",    // 罫線
+  red: "#E36A5F",     // アクセント
+  faint: "#8C929D",   // 補助文字
+  white: "#181A1F",   // カード面
+  mark: "rgba(255,206,84,0.30)", // マーカー
+  onRed: "#FFFFFF",   // アクセント上の文字
 };
 const SERIF = `"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif`;
 const SANS = `"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif`;
@@ -68,7 +70,7 @@ function Lines({ lines, k, onPick, selected }) {
   let list = null;
   const pickStyle = (raw) => ({
     cursor: onPick ? "pointer" : "default",
-    background: selected === raw ? "#FCE9E8" : "transparent",
+    background: selected === raw ? "rgba(227,106,95,0.18)" : "transparent",
     borderRadius: 4,
     transition: "background .15s",
   });
@@ -393,7 +395,7 @@ function ReadingCards() {
     borderRadius: 999,
     border: `1px solid ${on ? C.red : C.rule}`,
     background: on ? C.red : C.white,
-    color: on ? C.white : C.ink,
+    color: on ? C.onRed : C.ink,
     fontSize: 13,
     whiteSpace: "nowrap",
     cursor: "pointer",
@@ -566,7 +568,7 @@ function ReadingCards() {
             onClick={() => setConfirmId(null)}
             style={{
               position: "fixed", inset: 0, zIndex: 40,
-              background: "rgba(35,58,92,0.28)",
+              background: "rgba(0,0,0,0.6)",
               display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
             }}
           >
@@ -574,7 +576,7 @@ function ReadingCards() {
               onClick={(e) => e.stopPropagation()}
               style={{
                 background: C.white, borderRadius: 14, padding: "22px 20px 18px",
-                width: "min(340px, 100%)", boxShadow: "0 10px 30px rgba(35,58,92,0.3)",
+                width: "min(340px, 100%)", boxShadow: "0 10px 30px rgba(0,0,0,0.6)",
                 borderTop: `4px solid ${C.red}`,
               }}
             >
@@ -591,7 +593,7 @@ function ReadingCards() {
                 </button>
                 <button
                   onClick={() => removeNote(active.id)}
-                  style={{ flex: 1, padding: "11px 14px", borderRadius: 8, border: "none", background: C.red, color: C.white, fontSize: 14, cursor: "pointer" }}
+                  style={{ flex: 1, padding: "11px 14px", borderRadius: 8, border: "none", background: C.red, color: C.onRed, fontSize: 14, cursor: "pointer" }}
                 >
                   削除する
                 </button>
@@ -608,7 +610,7 @@ function ReadingCards() {
               width: "min(680px, 100%)", boxSizing: "border-box",
               maxHeight: "62vh", overflowY: "auto",
               background: C.white, borderTop: `3px solid ${C.red}`,
-              boxShadow: "0 -6px 20px rgba(35,58,92,0.18)",
+              boxShadow: "0 -6px 20px rgba(0,0,0,0.5)",
               borderRadius: "14px 14px 0 0",
               padding: "14px 18px 20px", zIndex: 20,
             }}
@@ -672,7 +674,7 @@ function ReadingCards() {
                 <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
                   <button
                     onClick={applyRewrite}
-                    style={{ flex: 1, padding: "11px 16px", borderRadius: 8, border: "none", background: C.red, color: C.white, fontSize: 14, cursor: "pointer" }}
+                    style={{ flex: 1, padding: "11px 16px", borderRadius: 8, border: "none", background: C.red, color: C.onRed, fontSize: 14, cursor: "pointer" }}
                   >
                     この文を書き換える
                   </button>
@@ -778,7 +780,7 @@ function ReadingCards() {
                 background: C.white,
                 border: `1px solid ${C.rule}`,
                 borderRadius: 10,
-                boxShadow: "0 1px 3px rgba(35,58,92,0.08)",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.4)",
                 cursor: "pointer",
                 overflow: "hidden",
               }}
@@ -831,7 +833,7 @@ function ReadingCards() {
             color: C.white,
             borderRadius: 10,
             padding: "12px 14px",
-            boxShadow: "0 4px 14px rgba(35,58,92,0.3)",
+            boxShadow: "0 4px 14px rgba(0,0,0,0.6)",
             fontSize: 13,
             zIndex: 30,
           }}
@@ -846,7 +848,7 @@ function ReadingCards() {
           <button
             onClick={undoDelete}
             style={{
-              border: "none", background: "none", color: C.mark,
+              border: "none", background: "none", color: C.red,
               fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", padding: 0,
             }}
           >
@@ -879,7 +881,7 @@ function ReadingCards() {
           fontSize: 15,
           fontFamily: SERIF,
           letterSpacing: 1,
-          boxShadow: "0 4px 12px rgba(35,58,92,0.3)",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.6)",
           cursor: "pointer",
         }}
       >
