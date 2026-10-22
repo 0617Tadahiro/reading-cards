@@ -388,7 +388,14 @@ function ReadingCards() {
     })
     .sort((a, b) => b.createdAt - a.createdAt);
 
+  const listScroll = useRef(0);
+  useEffect(() => {
+    // 本を開いたら一番上から、一覧に戻ったら元の位置から
+    window.scrollTo(0, view === "read" ? 0 : listScroll.current);
+  }, [view, activeId]);
+
   const openBook = (id) => {
+    listScroll.current = window.scrollY;
     setActiveId(id);
     setOpenCh(new Set());   // 全部閉じた状態で開く
     setOpenSec(new Set());
