@@ -1,0 +1,57 @@
+<svg width="680" height="350" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 350" role="img"><style>:root{--purple:#7F77DD;--coral:#D85A30;--teal:#1D9E75;--blue:#378ADD;--amber:#BA7517;--green:#639922;--red:#E24B4A;--gray:#888780}.arr{stroke:#8A93A3;stroke-width:1.5;fill:none}text{fill:#233A5C}</style><style>:root{--p:#233A5C;--s:#5B6575;--t:#8A93A3;--bg2:#F3F3EE;--b:#B9C3CF}text{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif}.t{font-size:14px;fill:#233A5C}.ts{font-size:12px;fill:#5B6575}.th{font-size:14px;font-weight:600;fill:#233A5C}path.shape{fill:#F3F3EE;stroke:#B9C3CF}.box{fill:#F3F3EE;stroke:#B9C3CF}.arr{stroke:#8A93A3;stroke-width:1.5;fill:none}.leader{stroke:#8A93A3;stroke-width:.5;stroke-dasharray:4 3;fill:none}.c-purple>rect,.c-purple>circle,.c-purple>ellipse,.c-purple>polygon,rect.c-purple,circle.c-purple,ellipse.c-purple{fill:#EEEDFE;stroke:#534AB7}.c-purple>path.shape{fill:#EEEDFE;stroke:#534AB7}.c-purple>.th,.c-purple>.t{fill:#3C3489}.c-purple>.ts{fill:#534AB7}.c-teal>rect,.c-teal>circle,.c-teal>ellipse,.c-teal>polygon,rect.c-teal,circle.c-teal,ellipse.c-teal{fill:#E1F5EE;stroke:#0F6E56}.c-teal>path.shape{fill:#E1F5EE;stroke:#0F6E56}.c-teal>.th,.c-teal>.t{fill:#085041}.c-teal>.ts{fill:#0F6E56}.c-coral>rect,.c-coral>circle,.c-coral>ellipse,.c-coral>polygon,rect.c-coral,circle.c-coral,ellipse.c-coral{fill:#FAECE7;stroke:#993C1D}.c-coral>path.shape{fill:#FAECE7;stroke:#993C1D}.c-coral>.th,.c-coral>.t{fill:#712B13}.c-coral>.ts{fill:#993C1D}.c-pink>rect,.c-pink>circle,.c-pink>ellipse,.c-pink>polygon,rect.c-pink,circle.c-pink,ellipse.c-pink{fill:#FBEAF0;stroke:#993556}.c-pink>path.shape{fill:#FBEAF0;stroke:#993556}.c-pink>.th,.c-pink>.t{fill:#72243E}.c-pink>.ts{fill:#993556}.c-gray>rect,.c-gray>circle,.c-gray>ellipse,.c-gray>polygon,rect.c-gray,circle.c-gray,ellipse.c-gray{fill:#F1EFE8;stroke:#5F5E5A}.c-gray>path.shape{fill:#F1EFE8;stroke:#5F5E5A}.c-gray>.th,.c-gray>.t{fill:#444441}.c-gray>.ts{fill:#5F5E5A}.c-blue>rect,.c-blue>circle,.c-blue>ellipse,.c-blue>polygon,rect.c-blue,circle.c-blue,ellipse.c-blue{fill:#E6F1FB;stroke:#185FA5}.c-blue>path.shape{fill:#E6F1FB;stroke:#185FA5}.c-blue>.th,.c-blue>.t{fill:#0C447C}.c-blue>.ts{fill:#185FA5}.c-green>rect,.c-green>circle,.c-green>ellipse,.c-green>polygon,rect.c-green,circle.c-green,ellipse.c-green{fill:#EAF3DE;stroke:#3B6D11}.c-green>path.shape{fill:#EAF3DE;stroke:#3B6D11}.c-green>.th,.c-green>.t{fill:#27500A}.c-green>.ts{fill:#3B6D11}.c-amber>rect,.c-amber>circle,.c-amber>ellipse,.c-amber>polygon,rect.c-amber,circle.c-amber,ellipse.c-amber{fill:#FAEEDA;stroke:#854F0B}.c-amber>path.shape{fill:#FAEEDA;stroke:#854F0B}.c-amber>.th,.c-amber>.t{fill:#633806}.c-amber>.ts{fill:#854F0B}.c-red>rect,.c-red>circle,.c-red>ellipse,.c-red>polygon,rect.c-red,circle.c-red,ellipse.c-red{fill:#FCEBEB;stroke:#A32D2D}.c-red>path.shape{fill:#FCEBEB;stroke:#A32D2D}.c-red>.th,.c-red>.t{fill:#791F1F}.c-red>.ts{fill:#A32D2D}path.shape{fill:#F3F3EE;stroke:#B9C3CF}</style><title>研究科長の一週間は、管理運営とメディア対応が大半で、研究の時間は細切れにしか残らない</title><desc>2024年4月第2週の月曜から日曜までを8時から24時の横軸に並べ、管理運営、教育、メディア対応、研究・学会・執筆の4種類で色分けした週間スケジュール図</desc>
+<text class="ts" x="110" y="50" text-anchor="middle">8時</text>
+<text class="ts" x="240" y="50" text-anchor="middle">12時</text>
+<text class="ts" x="370" y="50" text-anchor="middle">16時</text>
+<text class="ts" x="500" y="50" text-anchor="middle">20時</text>
+<text class="ts" x="630" y="50" text-anchor="middle">24時</text>
+<line x1="110" y1="60" x2="110" y2="300" stroke="var(--b)" stroke-width="0.5" stroke-dasharray="2 3"/>
+<line x1="240" y1="60" x2="240" y2="300" stroke="var(--b)" stroke-width="0.5" stroke-dasharray="2 3"/>
+<line x1="370" y1="60" x2="370" y2="300" stroke="var(--b)" stroke-width="0.5" stroke-dasharray="2 3"/>
+<line x1="500" y1="60" x2="500" y2="300" stroke="var(--b)" stroke-width="0.5" stroke-dasharray="2 3"/>
+<line x1="630" y1="60" x2="630" y2="300" stroke="var(--b)" stroke-width="0.5" stroke-dasharray="2 3"/>
+<text class="th" x="70" y="82" text-anchor="middle" dominant-baseline="central">月</text>
+<text class="th" x="70" y="116" text-anchor="middle" dominant-baseline="central">火</text>
+<text class="th" x="70" y="150" text-anchor="middle" dominant-baseline="central">水</text>
+<text class="th" x="70" y="184" text-anchor="middle" dominant-baseline="central">木</text>
+<text class="th" x="70" y="218" text-anchor="middle" dominant-baseline="central">金</text>
+<text class="th" x="70" y="252" text-anchor="middle" dominant-baseline="central">土</text>
+<text class="th" x="70" y="286" text-anchor="middle" dominant-baseline="central">日</text>
+<rect class="c-purple" x="110" y="70" width="113" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-purple" x="289" y="70" width="113" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-teal" x="403" y="70" width="64" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-amber" x="468" y="70" width="48" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-purple" x="110" y="104" width="32" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-purple" x="175" y="104" width="21" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-teal" x="197" y="104" width="48" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-purple" x="246" y="104" width="58" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-amber" x="305" y="104" width="32" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-teal" x="338" y="104" width="113" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-coral" x="452" y="104" width="64" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-amber" x="517" y="104" width="48" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-purple" x="110" y="138" width="64" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-coral" x="175" y="138" width="24" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-purple" x="240" y="138" width="162" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-purple" x="419" y="138" width="32" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-coral" x="452" y="138" width="23" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-purple" x="476" y="138" width="24" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-coral" x="533" y="138" width="97" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-purple" x="159" y="172" width="65" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-coral" x="240" y="172" width="49" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-purple" x="297" y="172" width="122" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-coral" x="427" y="172" width="40" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-coral" x="500" y="172" width="65" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-amber" x="110" y="206" width="65" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-teal" x="208" y="206" width="54" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-teal" x="305" y="206" width="162" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-purple" x="468" y="206" width="32" height="24" rx="3" stroke-width="0.5"/>
+<rect class="c-purple" x="240" y="240" width="162" height="24" rx="3" stroke-width="0.5"/>
+<text class="ts" x="370" y="286" text-anchor="middle" dominant-baseline="central">ひたすら寝る</text>
+<rect class="c-purple" x="110" y="316" width="12" height="12" rx="2" stroke-width="0.5"/>
+<text class="ts" x="128" y="322" dominant-baseline="central">管理運営・会議</text>
+<rect class="c-teal" x="250" y="316" width="12" height="12" rx="2" stroke-width="0.5"/>
+<text class="ts" x="268" y="322" dominant-baseline="central">教育・学生指導</text>
+<rect class="c-coral" x="390" y="316" width="12" height="12" rx="2" stroke-width="0.5"/>
+<text class="ts" x="408" y="322" dominant-baseline="central">メディア対応</text>
+<rect class="c-amber" x="510" y="316" width="12" height="12" rx="2" stroke-width="0.5"/>
+<text class="ts" x="528" y="322" dominant-baseline="central">研究・学会・執筆</text>
+</svg>
