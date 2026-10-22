@@ -453,9 +453,7 @@ function ReadingCards() {
   const openBook = (id) => {
     listScroll.current = window.scrollY;
     setActiveId(id);
-    // スマホは章のまとまりを最初から並べる（項は閉じた状態）、パソコンは全部閉じた状態で開く
-    const nb = notes.find((n) => n.id === id);
-    setOpenCh(mobile && nb ? new Set(parseBook(nb.body).chapters.map((_, i) => i)) : new Set());
+    setOpenCh(new Set());   // 章も項も全部閉じた状態で開く
     setOpenSec(new Set());
     setView("read");
   };
@@ -625,7 +623,7 @@ function ReadingCards() {
                     style={{ display: "flex", alignItems: "flex-end", gap: 10, width: "100%", textAlign: "left", border: "none", background: "none", cursor: "pointer", padding: "0 6px 8px" }}>
                     <span style={{ flex: 1, minWidth: 0 }}>
                       <span style={{ display: "block", fontSize: 12, color: N.sub, letterSpacing: "0.06em" }}>
-                        {lab.label.startsWith("CHAPTER") ? `第${lab.num}章　・　` : ""}{c.sections.length}項
+                        {lab.label.startsWith("CHAPTER") ? `第${lab.num}章　・　` : lab.label === "PROLOGUE" ? "序章　・　" : ""}{c.sections.length}項
                       </span>
                       <span style={{ display: "block", fontSize: 17, fontWeight: 700, color: N.text, lineHeight: 1.5, marginTop: 1 }}>{lab.name}</span>
                     </span>
