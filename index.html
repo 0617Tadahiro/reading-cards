@@ -41,6 +41,8 @@ const C = {
   white: "#FFFFFF",
   mark: "#FFF3B8",
 };
+// スマホ用（note風）の配色
+const N = { bg: "#FFFFFF", text: "#08131A", sub: "#6F767B", line: "#EDEDED", soft: "#F5F6F6", accent: "#2CB696", mark: "#FFF0A8" };
 const SERIF = `"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif`;
 const SANS = `"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif`;
 const KEY = "reading-cards-v1";
@@ -73,7 +75,7 @@ function renderInline(text, key) {
     if (!m) { parts.push(rest); break; }
     if (m.index > 0) parts.push(rest.slice(0, m.index));
     if (m[2] !== undefined) parts.push(<strong key={`${key}-b${i}`}>{m[2]}</strong>);
-    else parts.push(<mark key={`${key}-m${i}`} style={{ background: C.mark, padding: "0 2px" }}>{m[3]}</mark>);
+    else parts.push(<mark key={`${key}-m${i}`} style={{ background: `linear-gradient(transparent 55%, ${C.mark} 55%)`, color: "inherit", padding: "0 1px" }}>{m[3]}</mark>);
     rest = rest.slice(m.index + m[0].length);
     i++;
   }
@@ -81,7 +83,7 @@ function renderInline(text, key) {
 }
 
 // ---- 行配列の整形(段落・リスト)。onPickで文タップ選択に対応 ----
-function Lines({ lines, k, onPick, selected }) {
+function Lines({ lines, k, onPick, selected, note }) {
   const out = [];
   let list = null;
   const pickStyle = (raw) => ({
@@ -119,7 +121,7 @@ function Lines({ lines, k, onPick, selected }) {
         <table style={{ borderCollapse: "collapse", fontSize: "0.88em", lineHeight: 1.7, minWidth: "100%" }}>
           <thead>
             <tr>{head.map((c, j) => (
-              <th key={j} style={{ textAlign: "left", padding: "8px 10px", background: "#EEF2F7", borderBottom: `2px solid ${C.rule}`, whiteSpace: "nowrap" }}>
+              <th key={j} style={{ textAlign: "left", padding: "8px 10px", background: note ? N.soft : "#EEF2F7", borderBottom: `${note ? 1 : 2}px solid ${note ? N.line : C.rule}`, whiteSpace: "nowrap" }}>
                 {renderInline(c, `${k}-th${i}-${j}`)}
               </th>))}
             </tr>
@@ -127,7 +129,7 @@ function Lines({ lines, k, onPick, selected }) {
           <tbody>
             {body.map((r, ri) => (
               <tr key={ri}>{r.map((c, j) => (
-                <td key={j} style={{ padding: "8px 10px", borderBottom: `1px solid ${C.rule}`, verticalAlign: "top", minWidth: j === 0 ? 88 : 150 }}>
+                <td key={j} style={{ padding: "8px 10px", borderBottom: `1px solid ${note ? N.line : C.rule}`, verticalAlign: "top", minWidth: j === 0 ? 88 : 150 }}>
                   {renderInline(c, `${k}-td${i}-${ri}-${j}`)}
                 </td>))}
               </tr>
@@ -155,7 +157,7 @@ function Lines({ lines, k, onPick, selected }) {
             src={img[2]}
             alt={img[1]}
             loading="lazy"
-            style={{ display: "block", width: "100%", maxWidth: 680, height: "auto", margin: "0 auto", borderRadius: 8, border: `1px solid ${C.rule}`, background: C.white }}
+            style={{ display: "block", width: "100%", maxWidth: 680, height: "auto", margin: "0 auto", borderRadius: 8, border: `1px solid ${note ? N.line : C.rule}`, background: C.white }}
           /></a>
           <figcaption style={{ fontSize: 12, color: C.faint, textAlign: "center", marginTop: 6, lineHeight: 1.6 }}>{img[1]}</figcaption>
         </figure>
@@ -178,7 +180,9 @@ function Lines({ lines, k, onPick, selected }) {
     if (!line) return;
     const isNote = /^\*\*補足/.test(line);
     const noteStyle = isNote
-      ? { background: "#F2F4F7", borderLeft: `3px solid ${C.rule}`, padding: "10px 14px", borderRadius: 6, fontSize: "0.93em", lineHeight: 1.85 }
+      ? (note
+        ? { background: N.soft, padding: "14px 16px", borderRadius: 8, fontSize: "0.92em", lineHeight: 1.9, color: N.text }
+        : { background: "#F2F4F7", borderLeft: `3px solid ${C.rule}`, padding: "10px 14px", borderRadius: 6, fontSize: "0.93em", lineHeight: 1.85 })
       : {};
     out.push(
       <p
@@ -314,6 +318,9 @@ function ReadingCards() {
   const secRefs = useRef({});   // 項の要素（key → element）
   const rowRefs = useRef({});   // 項の見出し行
   const [curSec, setCurSec] = useState(null); // いま読んでいる開いた項
+  const [hdrHidden, setHdrHidden] = useState(false); // 下スクロールでヘッダーを隠す
+  const [prog, setProg] = useState(0);               // 読んだ位置（0〜1）
+  const lastY = useRef(0);
 
   // スマホ：画面上部に「いま読んでいる項」を出すため、スクロール位置から判定
   useEffect(() => {
@@ -324,9 +331,13 @@ function ReadingCards() {
         const el = secRefs.current[key];
         if (!el) return;
         const r = el.getBoundingClientRect();
-        if (r.top < 52 && r.bottom > 90) cur = key;
+        if (r.top < 60 && r.bottom > 100) cur = key;
       });
       setCurSec(cur);
+      const y = window.scrollY;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      setProg(max > 0 ? Math.min(1, y / max) : 0);
+      if (Math.abs(y - lastY.current) > 6) { setHdrHidden(y > lastY.current && y > 80); lastY.current = y; }
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -337,7 +348,7 @@ function ReadingCards() {
     const next = new Set(openSec); next.delete(key); setOpenSec(next);
     requestAnimationFrame(() => {
       const row = rowRefs.current[key];
-      if (row) row.scrollIntoView({ block: "start" });
+      if (row) { row.scrollIntoView({ block: "start" }); setHdrHidden(false); }
     });
   };
   // AI質問(文単位)
@@ -432,6 +443,7 @@ function ReadingCards() {
     })
     .sort((a, b) => b.createdAt - a.createdAt);
 
+  useEffect(() => { document.body.style.background = mobile ? N.bg : C.paper; }, [mobile]);
   const listScroll = useRef(0);
   useEffect(() => {
     // 本を開いたら一番上から、一覧に戻ったら元の位置から
@@ -543,6 +555,137 @@ function ReadingCards() {
       </div>
     );
 
+  // ================= 閲覧（スマホ：note風） =================
+  if (view === "read" && active && book && mobile) {
+    const allOpen = openCh.size >= book.chapters.length && book.chapters.length > 0;
+    const expandAll = () => {
+      if (allOpen) { setOpenCh(new Set()); setOpenSec(new Set()); }
+      else setOpenCh(new Set(book.chapters.map((_, i) => i)));
+    };
+    const chev = (open) => (
+      <svg width="14" height="14" viewBox="0 0 14 14" style={{ flexShrink: 0, transition: "transform .2s", transform: open ? "rotate(180deg)" : "none" }}>
+        <path d="M3 5 L7 9 L11 5" fill="none" stroke={N.sub} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+    const cur = curSec ? curSec.split("-").map(Number) : null;
+    return (
+      <div style={{ minHeight: "100vh", background: N.bg, color: N.text, fontFamily: SANS }}>
+        {/* 上部：隠れるヘッダー＋いま読んでいる項＋進捗バー */}
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 10, background: N.bg }}>
+          <div style={{ height: 48, marginTop: hdrHidden ? -48 : 0, transition: "margin-top .2s",
+            display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px", borderBottom: `1px solid ${N.line}` }}>
+            <button onClick={() => setView("list")} style={{ border: "none", background: "none", color: N.text, fontSize: 15, padding: 0, cursor: "pointer" }}>‹ 一覧</button>
+            <div style={{ display: "flex", gap: 18 }}>
+              <button onClick={expandAll} style={{ border: "none", background: "none", color: N.sub, fontSize: 13, padding: 0, cursor: "pointer" }}>{allOpen ? "章を閉じる" : "章をすべて開く"}</button>
+              <button onClick={() => setConfirmId(active.id)} style={{ border: "none", background: "none", color: N.sub, fontSize: 13, padding: 0, cursor: "pointer" }}>削除</button>
+            </div>
+          </div>
+          {cur && (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", borderBottom: `1px solid ${N.line}`, background: N.bg }}>
+              <span style={{ fontSize: 12, color: N.sub, whiteSpace: "nowrap" }}>{chapterLabel(book.chapters[cur[0]].title, cur[0]).num}-{cur[1] + 1}</span>
+              <span style={{ flex: 1, fontSize: 13.5, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{book.chapters[cur[0]].sections[cur[1]].title}</span>
+              <button onClick={() => closeSec(curSec)} style={{ border: `1px solid ${N.line}`, borderRadius: 999, background: N.bg, color: N.text, fontSize: 12.5, padding: "5px 12px", cursor: "pointer", whiteSpace: "nowrap" }}>閉じる</button>
+            </div>
+          )}
+          <div style={{ height: 2, background: "transparent" }}><div style={{ height: 2, width: `${prog * 100}%`, background: N.accent, transition: "width .1s" }} /></div>
+        </div>
+
+        <article style={{ padding: "76px 20px 120px" }}>
+          {active.cover && (
+            <img src={active.cover} alt={active.title}
+              style={{ display: "block", width: 120, height: "auto", margin: "8px auto 24px", borderRadius: 4, boxShadow: "0 2px 12px rgba(8,19,26,0.18)" }} />
+          )}
+          <h1 style={{ fontSize: 22, fontWeight: 700, lineHeight: 1.55, margin: "0 0 8px", letterSpacing: "0.02em" }}>{active.title}</h1>
+          {active.author && <div style={{ fontSize: 13.5, color: N.sub, marginBottom: 12 }}>{active.author}</div>}
+          {active.tags.length > 0 && (
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 24 }}>
+              {active.tags.map((t) => (
+                <span key={t} style={{ fontSize: 12, color: N.sub, background: N.soft, borderRadius: 999, padding: "3px 10px" }}>#{t}</span>
+              ))}
+            </div>
+          )}
+          {hasText(book.preamble) && (
+            <div style={{ fontSize: 16, lineHeight: 2, letterSpacing: "0.03em", marginBottom: 8 }}>
+              <Lines lines={book.preamble} k="pre" note />
+            </div>
+          )}
+
+          {/* 目次（章のアコーディオン） */}
+          <div style={{ margin: "12px -20px 0" }}>
+            {book.chapters.map((c, ci) => {
+              const cOpen = openCh.has(ci);
+              const lab = chapterLabel(c.title, ci);
+              return (
+                <section key={ci} style={{ borderTop: `8px solid ${N.soft}` }}>
+                  <button onClick={() => toggle(openCh, setOpenCh, ci)}
+                    style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left", border: "none", background: "none", cursor: "pointer", padding: "22px 20px 20px" }}>
+                    <span style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ display: "block", fontSize: 12, color: N.sub, letterSpacing: "0.08em", marginBottom: 4 }}>
+                        {lab.label.startsWith("CHAPTER") ? `第${lab.num}章　・　` : ""}{c.sections.length}項
+                      </span>
+                      <span style={{ display: "block", fontSize: 19, fontWeight: 700, color: N.text, lineHeight: 1.5 }}>{lab.name}</span>
+                    </span>
+                    {chev(cOpen)}
+                  </button>
+                  {cOpen && (
+                    <div style={{ padding: "0 20px 8px" }}>
+                      {hasText(c.intro) && (
+                        <div style={{ fontSize: 15, color: N.sub, lineHeight: 1.9, marginBottom: 6 }}>
+                          <Lines lines={c.intro} k={`c${ci}`} note />
+                        </div>
+                      )}
+                      {c.sections.map((sx, si) => {
+                        const key = `${ci}-${si}`;
+                        const sOpen = openSec.has(key);
+                        const isSum = /まとめ$/.test(sx.title);
+                        return (
+                          <div key={key} ref={(el) => (secRefs.current[key] = el)} style={{ borderTop: `1px solid ${N.line}` }}>
+                            <button ref={(el) => (rowRefs.current[key] = el)} onClick={() => (sOpen ? closeSec(key) : toggle(openSec, setOpenSec, key))}
+                              style={{ display: "flex", alignItems: "baseline", gap: 12, width: "100%", textAlign: "left", border: "none", background: "none", cursor: "pointer", padding: "16px 0", scrollMarginTop: 110 }}>
+                              <span style={{ fontSize: 12.5, color: sOpen ? N.accent : N.sub, minWidth: 30, fontVariantNumeric: "tabular-nums" }}>{isSum ? "まとめ" : `${lab.num}-${si + 1}`}</span>
+                              <span style={{ flex: 1, fontSize: 16, fontWeight: 700, color: N.text, lineHeight: 1.6 }}>{sx.title}</span>
+                              <span style={{ alignSelf: "center" }}>{chev(sOpen)}</span>
+                            </button>
+                            {sOpen && (
+                              <div style={{ fontSize: 16, lineHeight: 2, letterSpacing: "0.03em", padding: "2px 0 8px" }}>
+                                <Lines lines={sx.lines} k={key} note />
+                                <div style={{ textAlign: "center", margin: "8px 0 18px" }}>
+                                  <button onClick={() => closeSec(key)}
+                                    style={{ border: `1px solid ${N.line}`, borderRadius: 999, background: N.bg, color: N.sub, fontSize: 13, padding: "9px 22px", cursor: "pointer" }}>
+                                    この項を閉じる
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </section>
+              );
+            })}
+            <div style={{ borderTop: `8px solid ${N.soft}` }} />
+          </div>
+        </article>
+
+        {confirmId && (
+          <div onClick={() => setConfirmId(null)}
+            style={{ position: "fixed", inset: 0, zIndex: 40, background: "rgba(8,19,26,0.35)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+            <div onClick={(e) => e.stopPropagation()} style={{ background: N.bg, borderRadius: 14, padding: "22px 20px 18px", width: "min(340px, 100%)" }}>
+              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>カードを削除しますか？</div>
+              <div style={{ fontSize: 13, color: N.sub, lineHeight: 1.7, marginBottom: 18 }}>「{active.title}」を削除します。削除後も一覧の「元に戻す」から復元できます。</div>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button onClick={() => setConfirmId(null)} style={{ flex: 1, padding: "11px 14px", borderRadius: 8, border: `1px solid ${N.line}`, background: N.bg, color: N.text, fontSize: 14 }}>キャンセル</button>
+                <button onClick={() => removeNote(active.id)} style={{ flex: 1, padding: "11px 14px", borderRadius: 8, border: "none", background: N.text, color: N.bg, fontSize: 14 }}>削除する</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   // ================= 閲覧(目次アコーディオン) =================
   if (view === "read" && active && book) {
     const allOpen = openCh.size >= book.chapters.length && book.chapters.length > 0;
@@ -633,65 +776,6 @@ function ReadingCards() {
           {!mobile && (
             <div style={{ fontSize: 12, color: C.faint, marginBottom: 12 }}>
               タップで文を選択できます
-            </div>
-          )}
-
-          {/* スマホ：章カード型（案A） */}
-          {mobile && (
-            <div style={{ margin: "8px -20px 0", padding: "16px 12px 8px", background: "#EEF1F5", display: "flex", flexDirection: "column", gap: 16 }}>
-              {book.chapters.map((c, ci) => {
-                const cOpen = openCh.has(ci);
-                const lab = chapterLabel(c.title, ci);
-                return (
-                  <section key={ci} style={{ background: C.white, borderRadius: 14, overflow: "hidden", boxShadow: "0 1px 4px rgba(35,58,92,0.12)" }}>
-                    <button onClick={() => toggle(openCh, setOpenCh, ci)}
-                      style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: "none", cursor: "pointer",
-                        background: C.ink, color: C.paper, padding: "14px 18px" }}>
-                      <span style={{ flex: 1, minWidth: 0 }}>
-                        <span style={{ display: "block", fontSize: 11.5, letterSpacing: 2, opacity: 0.75 }}>{lab.label}</span>
-                        <span style={{ display: "block", fontFamily: SERIF, fontSize: 18, fontWeight: 600, lineHeight: 1.45, marginTop: 2 }}>{lab.name}</span>
-                      </span>
-                      <span style={{ fontSize: 11, opacity: 0.7, whiteSpace: "nowrap" }}>{c.sections.length}項</span>
-                      <span style={{ fontSize: 12, transition: "transform .15s", transform: cOpen ? "rotate(90deg)" : "none" }}>▶</span>
-                    </button>
-                    {cOpen && (
-                      <div style={{ padding: "6px 18px 6px", fontSize: 16.5 }}>
-                        {hasText(c.intro) && (
-                          <div style={{ paddingTop: 12, color: C.ink }}>
-                            <Lines lines={c.intro} k={`c${ci}`} />
-                          </div>
-                        )}
-                        {c.sections.map((sx, si) => {
-                          const key = `${ci}-${si}`;
-                          const sOpen = openSec.has(key);
-                          return (
-                            <div key={key} ref={(el) => (secRefs.current[key] = el)} style={{ borderTop: (si > 0 || hasText(c.intro)) ? "1px solid #E3E8EE" : "none" }}>
-                              <button ref={(el) => (rowRefs.current[key] = el)} onClick={() => (sOpen ? closeSec(key) : toggle(openSec, setOpenSec, key))}
-                                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", border: "none", background: "none",
-                                  cursor: "pointer", padding: "15px 0", scrollMarginTop: 56 }}>
-                                <span style={{ fontSize: 13, fontWeight: 700, color: sOpen ? C.red : C.faint, minWidth: 30 }}>{/まとめ$/.test(sx.title) ? "★" : `${lab.num}-${si + 1}`}</span>
-                                <span style={{ flex: 1, fontSize: 16.5, fontWeight: 700, color: C.ink, lineHeight: 1.5 }}>{sx.title}</span>
-                                <span style={{ fontSize: 12, color: sOpen ? C.red : C.faint, transition: "transform .15s", transform: sOpen ? "rotate(90deg)" : "none" }}>▶</span>
-                              </button>
-                              {sOpen && (
-                                <div style={{ borderLeft: `3px solid ${C.red}`, padding: "4px 0 6px 14px", margin: "0 0 16px", letterSpacing: "0.02em" }}>
-                                  <Lines lines={sx.lines} k={key} />
-                                  <div style={{ textAlign: "center", margin: "6px 0 4px" }}>
-                                    <button onClick={() => closeSec(key)}
-                                      style={{ border: `1px solid ${C.rule}`, borderRadius: 999, background: C.white, color: C.ink, fontSize: 13.5, padding: "9px 18px", cursor: "pointer" }}>
-                                      ▲ この項を閉じる
-                                    </button>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </section>
-                );
-              })}
             </div>
           )}
 
@@ -917,20 +1001,20 @@ function ReadingCards() {
 
   // ================= 一覧 =================
   return (
-    <div style={page}>
-      <header style={{ padding: "22px 18px 0" }}>
+    <div style={mobile ? { ...page, background: N.bg, color: N.text } : page}>
+      <header style={{ padding: mobile ? "26px 20px 0" : "22px 18px 0" }}>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-          <h1 style={{ fontFamily: SERIF, fontSize: 26, fontWeight: 600, margin: 0, letterSpacing: 2 }}>
+          <h1 style={mobile ? { fontSize: 24, fontWeight: 800, margin: 0, letterSpacing: "0.04em" } : { fontFamily: SERIF, fontSize: 26, fontWeight: 600, margin: 0, letterSpacing: 2 }}>
             読書カード
           </h1>
-          <span style={{ fontSize: 12, color: C.faint }}>{notes.length} 冊</span>
+          <span style={{ fontSize: 12, color: mobile ? N.sub : C.faint }}>{notes.length} 冊</span>
         </div>
-        <div style={{ height: 2, background: C.red, marginTop: 10 }} />
+        {!mobile && <div style={{ height: 2, background: C.red, marginTop: 10 }} />}
       </header>
 
-      <div style={{ padding: "14px 18px 6px" }}>
+      <div style={{ padding: mobile ? "16px 20px 6px" : "14px 18px 6px" }}>
         <input
-          style={input}
+          style={mobile ? { ...input, border: "none", background: N.soft, borderRadius: 10, padding: "12px 14px" } : input}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="書名・著者・本文を検索"
@@ -938,9 +1022,11 @@ function ReadingCards() {
       </div>
 
       {allTags.length > 0 && (
-        <div style={{ display: "flex", gap: 7, overflowX: "auto", padding: "6px 18px 4px" }}>
+        <div style={{ display: "flex", gap: 7, overflowX: "auto", padding: mobile ? "8px 20px 4px" : "6px 18px 4px" }}>
           {allTags.map((t) => (
-            <button key={t} style={chip(tag === t)} onClick={() => setTag(tag === t ? null : t)}>
+            <button key={t} style={mobile
+              ? { padding: "6px 13px", borderRadius: 999, border: "none", background: tag === t ? N.text : N.soft, color: tag === t ? N.bg : N.sub, fontSize: 13, whiteSpace: "nowrap", cursor: "pointer" }
+              : chip(tag === t)} onClick={() => setTag(tag === t ? null : t)}>
               #{t}
             </button>
           ))}
@@ -949,7 +1035,7 @@ function ReadingCards() {
 
       <main
         style={{
-          padding: "16px 18px 120px",
+          padding: mobile ? "20px 20px 120px" : "16px 18px 120px",
           display: "grid",
           gridTemplateColumns: mobile ? "repeat(2, 1fr)" : "repeat(auto-fill, minmax(104px, 1fr))",
           gap: mobile ? "30px 20px" : "26px 16px",
