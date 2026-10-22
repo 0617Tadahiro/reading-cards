@@ -4,7 +4,12 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>読書カード</title>
-<link rel="icon" href="data:," />
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#FAFAF7" />
+<meta name="apple-mobile-web-app-title" content="読書カード" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="description" content="人文・社会科学の書籍を精読した読書カード" />
 <style>
   * { -webkit-tap-highlight-color: transparent; }
@@ -43,6 +48,19 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 
 
 // ---- シード:職業としての学問 ----
 // カードデータは cards/ 配下のJSONから読み込む（下部の loadCards 参照）
+
+// ---- スマホ判定（幅640px以下でスマホ用の表示に切り替える）----
+const MOBILE_Q = "(max-width: 640px)";
+function useIsMobile() {
+  const [m, setM] = useState(() => window.matchMedia(MOBILE_Q).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(MOBILE_Q);
+    const h = (e) => setM(e.matches);
+    mq.addEventListener ? mq.addEventListener("change", h) : mq.addListener(h);
+    return () => (mq.removeEventListener ? mq.removeEventListener("change", h) : mq.removeListener(h));
+  }, []);
+  return m;
+}
 
 // ---- インライン整形 ----
 function renderInline(text, key) {
@@ -90,20 +108,56 @@ function Lines({ lines, k, onPick, selected }) {
     );
     list = null;
   };
+  let table = null;
+  const flushTable = (i) => {
+    if (!table) return;
+    const rows = table.filter((r) => !/^\|?\s*:?-{2,}/.test(r.replace(/\s/g, "").replace(/^\|/, "")));
+    const cells = rows.map((r) => r.replace(/^\||\|$/g, "").split("|").map((c) => c.trim()));
+    const [head, ...body] = cells;
+    out.push(
+      <div key={`${k}-t${i}`} style={{ overflowX: "auto", margin: "4px 0 18px", WebkitOverflowScrolling: "touch" }}>
+        <table style={{ borderCollapse: "collapse", fontSize: "0.88em", lineHeight: 1.7, minWidth: "100%" }}>
+          <thead>
+            <tr>{head.map((c, j) => (
+              <th key={j} style={{ textAlign: "left", padding: "8px 10px", background: "#EEF2F7", borderBottom: `2px solid ${C.rule}`, whiteSpace: "nowrap" }}>
+                {renderInline(c, `${k}-th${i}-${j}`)}
+              </th>))}
+            </tr>
+          </thead>
+          <tbody>
+            {body.map((r, ri) => (
+              <tr key={ri}>{r.map((c, j) => (
+                <td key={j} style={{ padding: "8px 10px", borderBottom: `1px solid ${C.rule}`, verticalAlign: "top", minWidth: j === 0 ? 88 : 150 }}>
+                  {renderInline(c, `${k}-td${i}-${ri}-${j}`)}
+                </td>))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+    table = null;
+  };
   lines.forEach((raw, i) => {
     const line = raw.trimEnd();
+    if (/^\|.*\|$/.test(line.trim())) {
+      flush(i);
+      (table = table || []).push(line.trim());
+      return;
+    }
+    flushTable(i);
     const img = line.match(/^!\[([^\]]*)\]\(([^)\s]+)\)$/);
     if (img) {
       flush(i);
       out.push(
-        <figure key={`${k}-f${i}`} style={{ margin: "6px 0 18px", padding: 0 }}>
+        <figure key={`${k}-f${i}`} style={{ margin: "10px 0 22px", padding: 0 }}>
           <a href={img[2]} target="_blank" rel="noopener"><img
             src={img[2]}
             alt={img[1]}
             loading="lazy"
-            style={{ display: "block", width: "100%", maxWidth: 680, height: "auto", margin: "0 auto", borderRadius: 6, border: `1px solid ${C.rule}`, background: C.paper }}
+            style={{ display: "block", width: "100%", maxWidth: 680, height: "auto", margin: "0 auto", borderRadius: 8, border: `1px solid ${C.rule}`, background: C.white }}
           /></a>
-          <figcaption style={{ fontSize: 11, color: C.faint, textAlign: "right", marginTop: 4 }}>タップで拡大</figcaption>
+          <figcaption style={{ fontSize: 12, color: C.faint, textAlign: "center", marginTop: 6, lineHeight: 1.6 }}>{img[1]}</figcaption>
         </figure>
       );
       return;
@@ -122,17 +176,22 @@ function Lines({ lines, k, onPick, selected }) {
     }
     flush(i);
     if (!line) return;
+    const isNote = /^\*\*補足/.test(line);
+    const noteStyle = isNote
+      ? { background: "#F2F4F7", borderLeft: `3px solid ${C.rule}`, padding: "10px 14px", borderRadius: 6, fontSize: "0.93em", lineHeight: 1.85 }
+      : {};
     out.push(
       <p
         key={`${k}-p${i}`}
         onClick={() => onPick && onPick(raw)}
-        style={{ margin: "0 0 12px", lineHeight: 1.95, ...pickStyle(raw) }}
+        style={{ margin: "0 0 1.1em", lineHeight: 1.95, ...pickStyle(raw), ...noteStyle }}
       >
         {renderInline(line, `${k}-p${i}`)}
       </p>
     );
   });
   flush("end");
+  flushTable("end");
   return <div>{out}</div>;
 }
 
@@ -205,9 +264,9 @@ function BookCover({ n }) {
   };
   if (n.cover && !broken) {
     return (
-      <div style={frame}>
+      <div style={{ ...frame, aspectRatio: "auto", background: "transparent" }}>
         <img src={n.cover} alt={n.title} loading="lazy" onError={() => setBroken(true)}
-          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+          style={{ width: "100%", height: "auto", display: "block" }} />
       </div>
     );
   }
@@ -236,6 +295,7 @@ function ReadingCards() {
   const [tag, setTag] = useState(null);
   const [openCh, setOpenCh] = useState(new Set());
   const [openSec, setOpenSec] = useState(new Set());
+  const mobile = useIsMobile();
   // AI質問(文単位)
   const [sel, setSel] = useState(null);       // { line: 選択した生テキスト行, ctx: 章のメモ全文 }
   const [askText, setAskText] = useState("");
@@ -389,6 +449,7 @@ function ReadingCards() {
   };
 
   const pickLine = (raw, ctx) => {
+    if (mobile) return; // スマホでは読書の邪魔にならないよう文の選択を無効にする
     setSel({ line: raw, ctx });
     setAskText(""); setAnswer(""); setAskErr("");
   };
@@ -468,9 +529,14 @@ function ReadingCards() {
           </div>
         </header>
 
-        <article style={{ padding: "22px 18px 80px" }}>
+        <article style={{ padding: mobile ? "24px 20px 96px" : "22px 18px 80px" }}>
+          {active.cover && (
+            <img src={active.cover} alt={active.title}
+              style={{ display: "block", width: mobile ? 128 : 140, height: "auto", margin: "4px auto 22px", borderRadius: 3,
+                boxShadow: "0 1px 2px rgba(35,58,92,0.18), 0 8px 20px rgba(35,58,92,0.18)" }} />
+          )}
           <div style={{ height: 3, background: C.red, width: 56, marginBottom: 14 }} />
-          <h1 style={{ fontFamily: SERIF, fontSize: 24, margin: "0 0 6px", lineHeight: 1.5 }}>
+          <h1 style={{ fontFamily: SERIF, fontSize: mobile ? 22 : 24, margin: "0 0 6px", lineHeight: 1.5 }}>
             {active.title}
           </h1>
           {active.author && (
@@ -487,7 +553,7 @@ function ReadingCards() {
           )}
 
           {hasText(book.preamble) && (
-            <div style={{ fontSize: 14.5, color: C.ink, marginBottom: 18, paddingBottom: 14, borderBottom: `1px dashed ${C.rule}` }}>
+            <div style={{ fontSize: mobile ? 16 : 14.5, color: C.ink, marginBottom: 18, paddingBottom: 14, borderBottom: `1px dashed ${C.rule}` }}>
               <Lines
                 lines={book.preamble}
                 k="pre"
@@ -497,18 +563,22 @@ function ReadingCards() {
             </div>
           )}
 
-          <div style={{ fontSize: 12, color: C.faint, marginBottom: 12 }}>
-            タップで文を選択できます
-          </div>
+          {!mobile && (
+            <div style={{ fontSize: 12, color: C.faint, marginBottom: 12 }}>
+              タップで文を選択できます
+            </div>
+          )}
 
           {/* 目次 = 章のアコーディオン */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: mobile ? 0 : 10, borderTop: mobile ? `1px solid ${C.rule}` : "none" }}>
             {book.chapters.map((c, ci) => {
               const cOpen = openCh.has(ci);
               return (
                 <section
                   key={ci}
-                  style={{
+                  style={mobile ? {
+                    borderBottom: `1px solid ${C.rule}`,
+                  } : {
                     background: C.white,
                     border: `1px solid ${cOpen ? C.ink : C.rule}`,
                     borderRadius: 10,
@@ -520,9 +590,10 @@ function ReadingCards() {
                     style={{
                       display: "flex", alignItems: "center", gap: 8,
                       width: "100%", textAlign: "left",
-                      padding: "14px 14px",
+                      padding: mobile ? "18px 0" : "14px 14px",
                       border: "none", background: "none", cursor: "pointer",
-                      fontFamily: SERIF, fontSize: 16.5, color: C.ink, lineHeight: 1.5,
+                      fontFamily: SERIF, fontSize: mobile ? 18 : 16.5, fontWeight: mobile ? 600 : 400, color: C.ink, lineHeight: 1.5,
+                      position: mobile ? "sticky" : "static", top: mobile ? 45 : "auto", zIndex: 5, backgroundColor: mobile ? C.paper : "transparent",
                     }}
                   >
                     <Caret open={cOpen} />
@@ -535,7 +606,7 @@ function ReadingCards() {
                   </button>
 
                   {cOpen && (
-                    <div style={{ padding: "0 16px 14px 38px", fontSize: 15 }}>
+                    <div style={{ padding: mobile ? "0 0 20px" : "0 16px 14px 38px", fontSize: mobile ? 16.5 : 15 }}>
                       {hasText(c.intro) && (
                         <Lines
                           lines={c.intro}
@@ -556,16 +627,16 @@ function ReadingCards() {
                               style={{
                                 display: "flex", alignItems: "center", gap: 8,
                                 width: "100%", textAlign: "left",
-                                padding: "11px 0",
+                                padding: mobile ? "15px 0" : "11px 0",
                                 border: "none", background: "none", cursor: "pointer",
-                                fontSize: 14.5, fontWeight: 600, color: C.ink, lineHeight: 1.5,
+                                fontSize: mobile ? 16.5 : 14.5, fontWeight: mobile ? 700 : 600, color: C.ink, lineHeight: 1.55,
                               }}
                             >
                               <Caret open={sOpen} />
                               <span>{s.title}</span>
                             </button>
                             {sOpen && (
-                              <div style={{ padding: "0 0 10px 24px", fontSize: 14.5 }}>
+                              <div style={{ padding: mobile ? "4px 0 22px" : "0 0 10px 24px", fontSize: mobile ? 16.5 : 14.5, letterSpacing: mobile ? "0.02em" : 0 }}>
                                 <Lines
                                   lines={s.lines}
                                   k={key}
@@ -752,8 +823,8 @@ function ReadingCards() {
         style={{
           padding: "16px 18px 120px",
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(104px, 1fr))",
-          gap: "26px 16px",
+          gridTemplateColumns: mobile ? "repeat(2, 1fr)" : "repeat(auto-fill, minmax(104px, 1fr))",
+          gap: mobile ? "30px 20px" : "26px 16px",
           alignItems: "start",
         }}
       >
@@ -767,14 +838,14 @@ function ReadingCards() {
             <BookCover n={n} />
             <h2
               style={{
-                fontFamily: SERIF, fontSize: 12.5, fontWeight: 600, margin: "9px 0 2px", lineHeight: 1.45,
+                fontFamily: SERIF, fontSize: mobile ? 14.5 : 12.5, fontWeight: 600, margin: "10px 0 3px", lineHeight: 1.5,
                 display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
               }}
             >
               {n.title}
             </h2>
             {n.author && (
-              <div style={{ fontSize: 11, color: C.faint, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              <div style={{ fontSize: mobile ? 12.5 : 11, color: C.faint, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                 {n.author}
               </div>
             )}

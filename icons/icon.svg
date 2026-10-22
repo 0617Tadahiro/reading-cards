@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+<rect width="1024" height="1024" fill="#233A5C"/><g transform="translate(0 -40)">
+<g transform="translate(512 705) scale(1.22) translate(-512 -705)"><g fill="none" stroke="#FAFAF7" stroke-linecap="round" stroke-linejoin="round">
+<path d="M512 700 C 505 600, 520 520, 512 330" stroke-width="22"/>
+<path d="M510 560 C 470 520, 430 500, 390 470" stroke-width="16"/>
+<path d="M514 480 C 560 440, 600 420, 640 400" stroke-width="16"/>
+<path d="M512 410 C 480 380, 460 350, 450 310" stroke-width="12"/>
+</g>
+<g>
+<ellipse cx="372" cy="455" rx="46" ry="24" transform="rotate(-25 372 455)" fill="#FAFAF7"/>
+<ellipse cx="662" cy="388" rx="46" ry="24" transform="rotate(-20 662 388)" fill="#FAFAF7"/>
+<ellipse cx="440" cy="290" rx="40" ry="21" transform="rotate(-60 440 290)" fill="#FFF3B8"/>
+<ellipse cx="530" cy="300" rx="44" ry="23" transform="rotate(-40 530 300)" fill="#C8443E"/>
+<ellipse cx="575" cy="470" rx="38" ry="20" transform="rotate(30 575 470)" fill="#FAFAF7" opacity="0.85"/>
+<ellipse cx="455" cy="540" rx="34" ry="18" transform="rotate(-30 455 540)" fill="#FAFAF7" opacity="0.85"/>
+</g>
+</g><path d="M512 800 C 430 760, 330 760, 230 795 L 230 700 C 330 665, 430 665, 512 705 Z" fill="#FAFAF7"/>
+<path d="M512 800 C 594 760, 694 760, 794 795 L 794 700 C 694 665, 594 665, 512 705 Z" fill="#FAFAF7"/>
+<path d="M512 705 L 512 800" stroke="#233A5C" stroke-width="6"/>
+<g stroke="#C9D4E0" stroke-width="5" stroke-linecap="round" fill="none">
+<path d="M280 735 C 350 715, 420 715, 480 735"/><path d="M280 765 C 350 745, 420 745, 480 765"/>
+<path d="M544 735 C 604 715, 674 715, 744 735"/><path d="M544 765 C 604 745, 674 745, 744 765"/>
+</g>
+</g></svg>
