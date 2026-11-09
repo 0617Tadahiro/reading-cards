@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 400" role="img"><style>text{font-family:'Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif;fill:#2C2C2A}.t{font-size:14px;fill:#2C2C2A}.th{font-size:14px;font-weight:500;fill:#2C2C2A}.ts{font-size:12px;fill:#5F5E5A}.arr{stroke:#73726C;stroke-width:1.5;fill:none}.leader{stroke:#B4B2A9;stroke-width:0.5;stroke-dasharray:4 4;fill:none}.c-coral rect,.c-coral circle,.c-coral ellipse,.c-coral polygon,.c-coral path{fill:#FAECE7;stroke:#D85A30}.c-coral text,.c-coral .th,.c-coral .ts{fill:#712B13}rect.c-coral,circle.c-coral{fill:#FAECE7;stroke:#D85A30}.c-teal rect,.c-teal circle,.c-teal ellipse,.c-teal polygon,.c-teal path{fill:#E1F5EE;stroke:#0F6E56}.c-teal text,.c-teal .th,.c-teal .ts{fill:#085041}rect.c-teal,circle.c-teal{fill:#E1F5EE;stroke:#0F6E56}.c-gray rect,.c-gray circle,.c-gray ellipse,.c-gray polygon,.c-gray path{fill:#F1EFE8;stroke:#5F5E5A}.c-gray text,.c-gray .th,.c-gray .ts{fill:#2C2C2A}rect.c-gray,circle.c-gray{fill:#F1EFE8;stroke:#5F5E5A}.c-blue rect,.c-blue circle,.c-blue ellipse,.c-blue polygon,.c-blue path{fill:#E6F1FB;stroke:#185FA5}.c-blue text,.c-blue .th,.c-blue .ts{fill:#0C447C}rect.c-blue,circle.c-blue{fill:#E6F1FB;stroke:#185FA5}.c-purple rect,.c-purple circle,.c-purple ellipse,.c-purple polygon,.c-purple path{fill:#EEEDFE;stroke:#534AB7}.c-purple text,.c-purple .th,.c-purple .ts{fill:#3C3489}rect.c-purple,circle.c-purple{fill:#EEEDFE;stroke:#534AB7}.c-amber rect,.c-amber circle,.c-amber ellipse,.c-amber polygon,.c-amber path{fill:#FAEEDA;stroke:#BA7517}.c-amber text,.c-amber .th,.c-amber .ts{fill:#633806}rect.c-amber,circle.c-amber{fill:#FAEEDA;stroke:#BA7517}.c-green rect,.c-green circle,.c-green ellipse,.c-green polygon,.c-green path{fill:#EAF3DE;stroke:#3B6D11}.c-green text,.c-green .th,.c-green .ts{fill:#27500A}rect.c-green,circle.c-green{fill:#EAF3DE;stroke:#3B6D11}.c-red rect,.c-red circle,.c-red ellipse,.c-red polygon,.c-red path{fill:#FCEBEB;stroke:#A32D2D}.c-red text,.c-red .th,.c-red .ts{fill:#791F1F}rect.c-red,circle.c-red{fill:#FCEBEB;stroke:#A32D2D}.c-pink rect,.c-pink circle,.c-pink ellipse,.c-pink polygon,.c-pink path{fill:#FBEAF0;stroke:#993556}.c-pink text,.c-pink .th,.c-pink .ts{fill:#72243E}rect.c-pink,circle.c-pink{fill:#FBEAF0;stroke:#993556}</style><rect width="100%" height="100%" fill="#FFFFFF"/><title>会社の持ち主は株主なのに、買収が「敵対的」かどうかは取締役会が決める</title><desc>左に国民と国会、右に株主と取締役会を並べた対比図。右側では買収者が取締役会の頭越しに株主へ直接申し込む</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#73726C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="th" x="150" y="40" text-anchor="middle">国家（間接民主制）</text>
+<text class="th" x="470" y="40" text-anchor="middle">株式会社（所有と経営の分離）</text>
+<line x1="300" y1="30" x2="300" y2="370" stroke="#B4B2A9" stroke-width="0.5" stroke-dasharray="4 4"/>
+<g class="c-gray"><rect x="60" y="80" width="180" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="150" y="100" text-anchor="middle" dominant-baseline="central">国民</text>
+<text class="ts" x="150" y="120" text-anchor="middle" dominant-baseline="central">主権者</text></g>
+<line x1="150" y1="136" x2="150" y2="214" class="arr" marker-end="url(#arrow)"/>
+<text class="ts" x="160" y="178">選挙で選ぶ</text>
+<g class="c-gray"><rect x="60" y="216" width="180" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="150" y="236" text-anchor="middle" dominant-baseline="central">国会</text>
+<text class="ts" x="150" y="256" text-anchor="middle" dominant-baseline="central">立法・予算を決める</text></g>
+<g class="c-teal"><rect x="380" y="80" width="180" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="470" y="100" text-anchor="middle" dominant-baseline="central">株主</text>
+<text class="ts" x="470" y="120" text-anchor="middle" dominant-baseline="central">会社の所有者</text></g>
+<line x1="470" y1="136" x2="470" y2="214" class="arr" marker-end="url(#arrow)"/>
+<text class="ts" x="480" y="178">総会で選ぶ</text>
+<g class="c-teal"><rect x="380" y="216" width="180" height="56" rx="8" stroke-width="0.5"/>
+<text class="th" x="470" y="236" text-anchor="middle" dominant-baseline="central">取締役会</text>
+<text class="ts" x="470" y="256" text-anchor="middle" dominant-baseline="central">経営の意思決定者</text></g>
+<g class="c-coral"><rect x="380" y="320" width="180" height="44" rx="8" stroke-width="0.5"/>
+<text class="th" x="470" y="342" text-anchor="middle" dominant-baseline="central">買収者</text></g>
+<path d="M560 342 L620 342 L620 108 L562 108" fill="none" stroke="#D85A30" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text class="ts" x="626" y="230">直接</text>
+<text class="ts" x="626" y="246">買う</text>
+<line x1="470" y1="320" x2="470" y2="274" stroke="#D85A30" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
+<text class="ts" x="480" y="300">同意なし＝敵対的</text>
+</svg>
