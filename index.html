@@ -140,6 +140,9 @@ function Lines({ lines, k, onPick, selected, note }) {
     );
     table = null;
   };
+  // 空行をはさまずに続く地の文の行は、同じ段落の続きとして行間を詰める（補足の続きは同じ枠の色にする）
+  const isProse = (l) => !!(l && l.trim()) && !/^(#|!\[|\||[-・]\s|\d+[.)]\s)/.test(l.trim());
+  let noteRun = false;
   lines.forEach((raw, i) => {
     const line = raw.trimEnd();
     if (/^\|.*\|$/.test(line.trim())) {
@@ -178,7 +181,10 @@ function Lines({ lines, k, onPick, selected, note }) {
     }
     flush(i);
     if (!line) return;
-    const isNote = /^\*\*補足/.test(line);
+    const prevProse = i > 0 && isProse(lines[i - 1]);
+    const nextProse = isProse(lines[i + 1]);
+    const isNote = /^\*\*補足/.test(line) || (noteRun && prevProse);
+    noteRun = isNote;
     const noteStyle = isNote
       ? (note
         ? { background: N.soft, padding: "14px 16px", borderRadius: 8, fontSize: "0.92em", lineHeight: 1.9, color: N.text }
@@ -188,7 +194,9 @@ function Lines({ lines, k, onPick, selected, note }) {
       <p
         key={`${k}-p${i}`}
         onClick={() => onPick && onPick(raw)}
-        style={{ margin: "0 0 1.1em", lineHeight: 1.95, ...pickStyle(raw), ...noteStyle }}
+        style={{ margin: nextProse ? (isNote ? "0" : "0 0 0.2em") : "0 0 1.1em", lineHeight: 1.95, ...pickStyle(raw), ...noteStyle,
+          ...(isNote && prevProse ? { borderTopLeftRadius: 0, borderTopRightRadius: 0, paddingTop: 2 } : {}),
+          ...(isNote && nextProse ? { borderBottomLeftRadius: 0, borderBottomRightRadius: 0, paddingBottom: 2 } : {}) }}
       >
         {renderInline(line, `${k}-p${i}`)}
       </p>
