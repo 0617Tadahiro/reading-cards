@@ -142,7 +142,7 @@ function Lines({ lines, k, onPick, selected, note }) {
   };
   // 空行をはさまずに続く地の文の行は、同じ段落の続きとして行間を詰める（補足の続きは同じ枠の色にする）
   const isProse = (l) => !!(l && l.trim()) && !/^(#|!\[|\||[-・]\s|\d+[.)]\s)/.test(l.trim());
-  let noteRun = false;
+  let noteRun = null;
   lines.forEach((raw, i) => {
     const line = raw.trimEnd();
     if (/^\|.*\|$/.test(line.trim())) {
@@ -183,9 +183,15 @@ function Lines({ lines, k, onPick, selected, note }) {
     if (!line) return;
     const prevProse = i > 0 && isProse(lines[i - 1]);
     const nextProse = isProse(lines[i + 1]);
-    const isNote = /^\*\*補足/.test(line) || (noteRun && prevProse);
-    noteRun = isNote;
-    const noteStyle = isNote
+    // 補足・用語メモは本文と区別する枠で表示（空行なしの続きの行も同じ枠）
+    const kind = /^\*\*補足/.test(line) ? "note" : /^\*\*用語メモ/.test(line) ? "term" : (noteRun && prevProse ? noteRun : null);
+    const isNote = !!kind;
+    noteRun = kind;
+    const noteStyle = kind === "term"
+      ? (note
+        ? { background: "#EEF7F4", padding: "12px 16px", borderRadius: 8, fontSize: "0.9em", lineHeight: 1.85, color: N.text }
+        : { background: "#EEF6F3", borderLeft: "3px solid #8CC5B3", padding: "8px 14px", borderRadius: 6, fontSize: "0.9em", lineHeight: 1.8 })
+      : isNote
       ? (note
         ? { background: N.soft, padding: "14px 16px", borderRadius: 8, fontSize: "0.92em", lineHeight: 1.9, color: N.text }
         : { background: "#F2F4F7", borderLeft: `3px solid ${C.rule}`, padding: "10px 14px", borderRadius: 6, fontSize: "0.93em", lineHeight: 1.85 })
